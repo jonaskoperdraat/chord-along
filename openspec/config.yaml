@@ -1,0 +1,45 @@
+schema: spec-driven
+
+context: |
+  Domain: a web tool for authoring ChordPro chord files and synchronizing them
+  to an audio source (YouTube v1; Spotify eventual) via tapping. The output is a
+  fast-serving playback bundle. Think of the pipeline as a compiler:
+    source (*.chordpro) → compile step → playback bundle (*.play.json)
+  with a binding sidecar (*.sync.json) acting as a source map, never served.
+
+  Core mental model / terminology (see openspec/specs/chord-sync-design.md):
+  - Occurrence: a single chord event in the performance (what a timestamp binds to).
+  - Performed/unrolled sequence: chord timeline after expanding repeats & section
+    refs. All sync logic operates on this, not literal source order.
+  - Slot: a (chord?, text?) pair in a rendered line; the unit playback iterates over.
+  - Compile step: the only place that resolves IDs → positions, unrolls, bakes end times.
+
+  Key architectural decisions (resolved):
+  - Source stays pure ChordPro — no inline IDs or annotated dialect.
+  - Occurrence identity lives entirely in the sidecar, keyed on
+    (chord, anchor-word, section, ordinal).
+  - source descriptor is polymorphic from day one: { kind, ...provider fields, offsetSec }.
+  - Timestamps are stored relative to a normalized track timeline + offsetSec,
+    not tied to a provider player's quirks.
+  - Editor: leaning CodeMirror 6 — its changeset model gives in-session position
+    mapping (mark-riding) for free, which is the §6.1 edit-resilience path.
+  - v1 scope: inline-only ChordPro (no repeat/reference unrolling); ordinal tap
+    capture producing taps[] + sourceHash; no cross-session alignment engine yet.
+  - Song modeled as a graph: source (versioned, owned) ← many sync sidecars
+    (each pinned to a source version). Build the model now; multi-author features later.
+
+  Tap capture model:
+  - Guided/prompted: system highlights next chord, each tap timestamps it and advances.
+    Enforces ordinal mapping by construction; mis-taps surface immediately via the highlight.
+  - Re-tap from chord N: recover from mistakes without redoing the whole song.
+  - Offset is a small, user-adjustable calibration (default ~0); never hardcode a constant.
+
+# Per-artifact rules (optional)
+# Add custom rules for specific artifacts.
+# Example:
+#   rules:
+#     proposal:
+#       - Keep proposals under 500 words
+#       - Always include a "Non-goals" section
+#     tasks:
+#       - Break tasks into chunks of max 2 hours
