@@ -9,12 +9,14 @@
     "preview": "vite preview",
     "lint": "eslint src",
     "test": "vitest run",
-    "test:watch": "vitest"
+    "test:watch": "vitest",
+    "generate:api": "openapi-generator-cli generate -i ../api/openapi.yaml -g typescript-fetch -o src/generated/api -t openapi-templates --additional-properties=typescriptThreePlus=true,withSeparateModelsAndApi=true,modelPackage=models,apiPackage=apis"
   },
   "dependencies": {
     "vue": "^3.5.34"
   },
   "devDependencies": {
+    "@openapitools/openapi-generator-cli": "^2.39.0",
     "@types/node": "^24.12.3",
     "@types/youtube": "^0.3.0",
     "@typescript-eslint/eslint-plugin": "^8.61.1",

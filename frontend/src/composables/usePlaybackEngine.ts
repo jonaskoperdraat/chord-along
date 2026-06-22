@@ -1,5 +1,5 @@
-import { ref, watch, onUnmounted } from 'vue'
-import type { Ref } from 'vue'
+import { ref, watch, onUnmounted, toValue } from 'vue'
+import type { Ref, MaybeRef } from 'vue'
 import type { PlayBundle, BundleEvent } from '../types/playBundle'
 
 export interface ActiveEvent {
@@ -27,7 +27,7 @@ function binarySearchEventIdx(events: BundleEvent[], time: number): number {
 const YT_PLAYING = 1
 
 export function usePlaybackEngine(
-  bundle: PlayBundle,
+  bundleMaybeRef: MaybeRef<PlayBundle | null>,
   getCurrentTime: () => number,
   playerState: Ref<number>,
 ) {
@@ -37,6 +37,11 @@ export function usePlaybackEngine(
   let rafId: number | null = null
 
   function tick() {
+    const bundle = toValue(bundleMaybeRef)
+    if (!bundle) {
+      rafId = requestAnimationFrame(tick)
+      return
+    }
     const time = getCurrentTime() + (bundle.source.offsetSec ?? 0)
     const idx = binarySearchEventIdx(bundle.events, time)
     if (idx === -1) {

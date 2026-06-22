@@ -1,20 +1,23 @@
 <script setup lang="ts">
-import { onMounted } from 'vue'
+import { ref, onMounted } from 'vue'
 import { useYouTubePlayer } from '../composables/useYouTubePlayer'
 import { usePlaybackEngine } from '../composables/usePlaybackEngine'
 import ChordDisplay from '../components/ChordDisplay.vue'
 import { assertBundleVersion } from '../utils/bundleVersion'
 import type { PlayBundle } from '../types/playBundle'
-import bundleJson from '../fixtures/sample.play.json'
+import { SongsApi, Configuration } from '../generated/api'
 
-const bundle = bundleJson as PlayBundle
-assertBundleVersion(bundle)
+const bundle = ref<PlayBundle | null>(null)
 
 const { playerState, createPlayer, currentTime } = useYouTubePlayer()
 const { activeEvent, activeEventIdx, activeProgress } = usePlaybackEngine(bundle, currentTime, playerState)
 
-onMounted(() => {
-  createPlayer('yt-player', bundle.source.videoId)
+onMounted(async () => {
+  const api = new SongsApi(new Configuration({ basePath: import.meta.env.VITE_API_BASE_URL }))
+  const loaded = await api.getSongBundle({ id: 'photograph' })
+  assertBundleVersion(loaded as PlayBundle)
+  bundle.value = loaded as PlayBundle
+  createPlayer('yt-player', bundle.value.source.videoId)
 })
 </script>
 
@@ -24,6 +27,7 @@ onMounted(() => {
       <div id="yt-player" />
     </div>
     <ChordDisplay
+      v-if="bundle"
       :bundle="bundle"
       :active-event="activeEvent"
       :active-event-idx="activeEventIdx"

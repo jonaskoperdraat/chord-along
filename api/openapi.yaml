@@ -1,0 +1,130 @@
+openapi: 3.0.3
+info:
+  title: chord-along API
+  version: 1.0.0
+  description: Serves playback bundles for chord-along
+
+tags:
+  - name: Songs
+
+paths:
+  /api/songs:
+    get:
+      tags: [Songs]
+      operationId: getSongs
+      summary: List all songs
+      responses:
+        '200':
+          description: List of songs
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/SongSummary'
+
+  /api/songs/{id}/bundle:
+    get:
+      tags: [Songs]
+      operationId: getSongBundle
+      summary: Get the playback bundle for a song
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Playback bundle
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PlayBundle'
+        '404':
+          description: Song not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+components:
+  schemas:
+    SongSummary:
+      type: object
+      required: [id, title, artist]
+      properties:
+        id:
+          type: string
+        title:
+          type: string
+        artist:
+          type: string
+
+    PlayBundle:
+      type: object
+      required: [source, version, lines, events]
+      properties:
+        source:
+          $ref: '#/components/schemas/YoutubeSource'
+        version:
+          type: integer
+        lines:
+          type: array
+          items:
+            $ref: '#/components/schemas/Line'
+        events:
+          type: array
+          items:
+            $ref: '#/components/schemas/BundleEvent'
+
+    YoutubeSource:
+      type: object
+      required: [kind, videoId, offsetSec]
+      properties:
+        kind:
+          type: string
+          enum: [youtube]
+        videoId:
+          type: string
+        offsetSec:
+          type: number
+
+    Line:
+      type: object
+      required: [slots]
+      properties:
+        section:
+          type: string
+        slots:
+          type: array
+          items:
+            $ref: '#/components/schemas/Slot'
+
+    Slot:
+      type: object
+      properties:
+        chord:
+          type: string
+        text:
+          type: string
+        t:
+          type: number
+
+    BundleEvent:
+      type: object
+      required: [t, lineIdx, slotIdx]
+      properties:
+        t:
+          type: number
+        lineIdx:
+          type: integer
+        slotIdx:
+          type: integer
+
+    ErrorResponse:
+      type: object
+      required: [message]
+      properties:
+        message:
+          type: string
