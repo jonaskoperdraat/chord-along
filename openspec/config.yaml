@@ -7,6 +7,13 @@ context: |
     source (*.chordpro) → compile step → playback bundle (*.play.json)
   with a binding sidecar (*.sync.json) acting as a source map, never served.
 
+  Tech stack:
+  - Frontend: Vue 3, Vite, TypeScript
+  - Backend: Java, Quarkus
+  - Editor component: CodeMirror 6
+  - Mono-repo layout: frontend/ and backend/ directories
+  - Compilation runs in both FE (TS, live preview, no roundtrip) and BE (Java, authoritative)
+
   Core mental model / terminology (see openspec/specs/chord-sync-design.md):
   - Occurrence: a single chord event in the performance (what a timestamp binds to).
   - Performed/unrolled sequence: chord timeline after expanding repeats & section
@@ -21,8 +28,9 @@ context: |
   - source descriptor is polymorphic from day one: { kind, ...provider fields, offsetSec }.
   - Timestamps are stored relative to a normalized track timeline + offsetSec,
     not tied to a provider player's quirks.
-  - Editor: leaning CodeMirror 6 — its changeset model gives in-session position
-    mapping (mark-riding) for free, which is the §6.1 edit-resilience path.
+  - Editor: CodeMirror 6 — changeset model gives in-session position mapping
+    (mark-riding) for free, the §6.1 edit-resilience path. Investigate
+    chordbook/editor (GitHub) for a reusable Lezer-based ChordPro grammar.
   - v1 scope: inline-only ChordPro (no repeat/reference unrolling); ordinal tap
     capture producing taps[] + sourceHash; no cross-session alignment engine yet.
   - Song modeled as a graph: source (versioned, owned) ← many sync sidecars

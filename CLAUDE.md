@@ -12,11 +12,31 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 The compile step is the only place that resolves identities to positions, unrolls repeats, and bakes end times. See `openspec/specs/chord-sync-design.md` for full design rationale, decisions log, and roadmap.
 
-## Status
+## Tech stack
 
-This repository is a freshly scaffolded project — there is **no application source code, build system, or tests yet**, and no commits on `main`. What exists so far is tooling for a spec-driven development workflow (OpenSpec) and an IntelliJ IDEA module definition (`chord-along.iml`, a language-agnostic `GENERAL_MODULE`).
+- **Frontend:** Vue 3, Vite, TypeScript — lives in `frontend/`
+- **Backend:** Java, Quarkus — lives in `backend/`
+- **Editor component:** CodeMirror 6 (changeset model required for §6.1 in-session position mapping)
+- **Compilation** runs in both FE (TypeScript, for live preview without roundtrips) and BE (Java, authoritative output)
 
-When adding the first real code, also add the corresponding build/lint/test commands to this file.
+## Running locally
+
+```bash
+cd frontend
+npm install   # first time only
+npm run dev   # → http://localhost:5173
+```
+
+Opens the chord player with a hand-crafted Photograph (Nickelback) fixture. The YouTube embed loads automatically; hit play and watch chords highlight in sync.
+
+## Commands
+
+```bash
+# All run from frontend/
+npm run dev      # Vite dev server → http://localhost:5173
+npm run build    # Type-check + production build → frontend/dist/
+npm run lint     # ESLint
+```
 
 ## Development workflow: OpenSpec (spec-driven)
 

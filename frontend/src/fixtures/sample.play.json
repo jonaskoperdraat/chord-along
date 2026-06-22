@@ -1,0 +1,174 @@
+{
+  "source": {
+    "kind": "youtube",
+    "videoId": "BB0DU4DoPP4",
+    "offsetSec": 0
+  },
+  "version": 1,
+  "lines": [
+    {
+      "section": "Intro",
+      "slots": [
+        { "chord": "E", "text": "" },
+        { "chord": "B", "text": "" },
+        { "chord": "C#m", "text": "" },
+        { "chord": "A", "text": "" }
+      ]
+    },
+    {
+      "section": "Verse 1",
+      "slots": [
+        { "chord": "E", "text": "Look at this photo-" },
+        { "chord": "B", "text": "graph" },
+        { "text": " every time I do it makes me" }
+      ]
+    },
+    {
+      "slots": [
+        { "chord": "C#m", "text": "laugh" },
+        { "text": " how did our eyes get so" },
+        { "chord": "A", "text": "red" }
+      ]
+    },
+    {
+      "slots": [
+        { "chord": "E", "text": "And what the hell is on" },
+        { "chord": "B", "text": "Joey's head" }
+      ]
+    },
+    {
+      "slots": [
+        { "chord": "C#m", "text": "And this is where I" },
+        { "chord": "A", "text": "grew up" },
+        { "text": " I think the present" }
+      ]
+    },
+    {
+      "slots": [
+        { "chord": "E", "text": "owner fixed it" },
+        { "chord": "B", "text": "up" }
+      ]
+    },
+    {
+      "slots": [
+        { "chord": "C#m", "text": "I never knew we'd" },
+        { "chord": "A", "text": "ever ran out" },
+        { "text": " of" }
+      ]
+    },
+    {
+      "slots": [
+        { "chord": "E", "text": "luck" }
+      ]
+    },
+    {
+      "section": "Pre-Chorus",
+      "slots": [
+        { "chord": "A", "text": "Like the bottom of a bottle" }
+      ]
+    },
+    {
+      "slots": [
+        { "chord": "E", "text": "No, I can't remember" }
+      ]
+    },
+    {
+      "slots": [
+        { "chord": "A", "text": "Thinking 'bout a wish" }
+      ]
+    },
+    {
+      "slots": [
+        { "chord": "B", "text": "I've forgotten" }
+      ]
+    },
+    {
+      "section": "Chorus",
+      "slots": [
+        { "chord": "E", "text": "Never made it as a wise" },
+        { "chord": "B", "text": "man" }
+      ]
+    },
+    {
+      "slots": [
+        { "chord": "C#m", "text": "Couldn't cut it as a poor" },
+        { "chord": "A", "text": "man stealing" }
+      ]
+    },
+    {
+      "slots": [
+        { "chord": "E", "text": "Tired of living like a blind" },
+        { "chord": "B", "text": "man" }
+      ]
+    },
+    {
+      "slots": [
+        { "chord": "C#m", "text": "I'm so tired of living like a" },
+        { "chord": "A", "text": "blind man" }
+      ]
+    },
+    {
+      "slots": [
+        { "chord": "E", "text": "Look at this photo-" },
+        { "chord": "B", "text": "graph" }
+      ]
+    },
+    {
+      "slots": [
+        { "chord": "C#m", "text": "Every time it makes me laugh" },
+        { "chord": "A", "text": "" }
+      ]
+    },
+    {
+      "slots": [
+        { "chord": "E", "text": "Every time it makes me" },
+        { "chord": "B", "text": "" }
+      ]
+    },
+    {
+      "slots": [
+        { "chord": "C#m", "text": "laugh" },
+        { "chord": "A", "text": "" }
+      ]
+    }
+  ],
+  "events": [
+    { "t": 5.0,  "lineIdx": 0,  "slotIdx": 0 },
+    { "t": 6.9,  "lineIdx": 0,  "slotIdx": 1 },
+    { "t": 8.8,  "lineIdx": 0,  "slotIdx": 2 },
+    { "t": 10.7, "lineIdx": 0,  "slotIdx": 3 },
+    { "t": 12.6, "lineIdx": 1,  "slotIdx": 0 },
+    { "t": 14.5, "lineIdx": 1,  "slotIdx": 1 },
+    { "t": 16.4, "lineIdx": 2,  "slotIdx": 0 },
+    { "t": 18.3, "lineIdx": 2,  "slotIdx": 2 },
+    { "t": 20.2, "lineIdx": 3,  "slotIdx": 0 },
+    { "t": 22.1, "lineIdx": 3,  "slotIdx": 1 },
+    { "t": 24.0, "lineIdx": 4,  "slotIdx": 0 },
+    { "t": 25.9, "lineIdx": 4,  "slotIdx": 1 },
+    { "t": 27.8, "lineIdx": 5,  "slotIdx": 0 },
+    { "t": 29.7, "lineIdx": 5,  "slotIdx": 1 },
+    { "t": 31.6, "lineIdx": 6,  "slotIdx": 0 },
+    { "t": 33.5, "lineIdx": 6,  "slotIdx": 1 },
+    { "t": 35.4, "lineIdx": 7,  "slotIdx": 0 },
+    { "t": 38.2, "lineIdx": 8,  "slotIdx": 0 },
+    { "t": 42.0, "lineIdx": 9,  "slotIdx": 0 },
+    { "t": 45.8, "lineIdx": 10, "slotIdx": 0 },
+    { "t": 49.6, "lineIdx": 11, "slotIdx": 0 },
+    { "t": 53.4, "lineIdx": 12, "slotIdx": 0 },
+    { "t": 55.3, "lineIdx": 12, "slotIdx": 1 },
+    { "t": 57.2, "lineIdx": 13, "slotIdx": 0 },
+    { "t": 59.1, "lineIdx": 13, "slotIdx": 1 },
+    { "t": 61.0, "lineIdx": 14, "slotIdx": 0 },
+    { "t": 62.9, "lineIdx": 14, "slotIdx": 1 },
+    { "t": 64.8, "lineIdx": 15, "slotIdx": 0 },
+    { "t": 66.7, "lineIdx": 15, "slotIdx": 1 },
+    { "t": 68.6, "lineIdx": 16, "slotIdx": 0 },
+    { "t": 70.5, "lineIdx": 16, "slotIdx": 1 },
+    { "t": 72.4, "lineIdx": 17, "slotIdx": 0 },
+    { "t": 74.3, "lineIdx": 17, "slotIdx": 1 },
+    { "t": 76.2, "lineIdx": 18, "slotIdx": 0 },
+    { "t": 78.1, "lineIdx": 18, "slotIdx": 1 },
+    { "t": 80.0, "lineIdx": 19, "slotIdx": 0 },
+    { "t": 81.9, "lineIdx": 19, "slotIdx": 1 }
+  ]
+}
