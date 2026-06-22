@@ -7,7 +7,7 @@ export interface ActiveEvent {
   slotIdx: number
 }
 
-function binarySearchEvent(events: BundleEvent[], time: number): ActiveEvent | null {
+function binarySearchEventIdx(events: BundleEvent[], time: number): number {
   let lo = 0
   let hi = events.length - 1
   let result = -1
@@ -20,8 +20,7 @@ function binarySearchEvent(events: BundleEvent[], time: number): ActiveEvent | n
       hi = mid - 1
     }
   }
-  if (result === -1) return null
-  return { lineIdx: events[result].lineIdx, slotIdx: events[result].slotIdx }
+  return result
 }
 
 // YT.PlayerState.PLAYING = 1
@@ -33,11 +32,26 @@ export function usePlaybackEngine(
   playerState: Ref<number>,
 ) {
   const activeEvent = ref<ActiveEvent | null>(null)
+  const activeEventIdx = ref<number | null>(null)
+  const activeProgress = ref<number>(0)
   let rafId: number | null = null
 
   function tick() {
     const time = getCurrentTime() + (bundle.source.offsetSec ?? 0)
-    activeEvent.value = binarySearchEvent(bundle.events, time)
+    const idx = binarySearchEventIdx(bundle.events, time)
+    if (idx === -1) {
+      activeEvent.value = null
+      activeEventIdx.value = null
+      activeProgress.value = 0
+    } else {
+      const ev = bundle.events[idx]
+      activeEvent.value = { lineIdx: ev.lineIdx, slotIdx: ev.slotIdx }
+      activeEventIdx.value = idx
+      const next = bundle.events[idx + 1]
+      activeProgress.value = next
+        ? Math.min(1, (time - ev.t) / (next.t - ev.t))
+        : 1
+    }
     rafId = requestAnimationFrame(tick)
   }
 
@@ -62,5 +76,5 @@ export function usePlaybackEngine(
 
   onUnmounted(stop)
 
-  return { activeEvent }
+  return { activeEvent, activeEventIdx, activeProgress }
 }

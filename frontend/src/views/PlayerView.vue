@@ -11,7 +11,7 @@ const bundle = bundleJson as PlayBundle
 assertBundleVersion(bundle)
 
 const { playerState, createPlayer, currentTime } = useYouTubePlayer()
-const { activeEvent } = usePlaybackEngine(bundle, currentTime, playerState)
+const { activeEvent, activeEventIdx, activeProgress } = usePlaybackEngine(bundle, currentTime, playerState)
 
 onMounted(() => {
   createPlayer('yt-player', bundle.source.videoId)
@@ -26,6 +26,8 @@ onMounted(() => {
     <ChordDisplay
       :bundle="bundle"
       :active-event="activeEvent"
+      :active-event-idx="activeEventIdx"
+      :active-progress="activeProgress"
     />
   </div>
 </template>

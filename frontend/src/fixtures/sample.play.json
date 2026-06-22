@@ -19,14 +19,13 @@
       "section": "Verse 1",
       "slots": [
         { "chord": "E", "text": "Look at this photo-" },
-        { "chord": "B", "text": "graph" },
-        { "text": " every time I do it makes me" }
+        { "chord": "B", "text": "graph every time I do it makes me" }
       ]
     },
     {
       "slots": [
-        { "chord": "C#m", "text": "laugh" },
-        { "text": " how did our eyes get so" },
+        { "text": "laugh " },
+        { "chord": "C#m", "text": "how did our eyes get so" },
         { "chord": "A", "text": "red" }
       ]
     },
@@ -139,7 +138,7 @@
     { "t": 10.7, "lineIdx": 0,  "slotIdx": 3 },
     { "t": 12.6, "lineIdx": 1,  "slotIdx": 0 },
     { "t": 14.5, "lineIdx": 1,  "slotIdx": 1 },
-    { "t": 16.4, "lineIdx": 2,  "slotIdx": 0 },
+    { "t": 16.4, "lineIdx": 2,  "slotIdx": 1 },
     { "t": 18.3, "lineIdx": 2,  "slotIdx": 2 },
     { "t": 20.2, "lineIdx": 3,  "slotIdx": 0 },
     { "t": 22.1, "lineIdx": 3,  "slotIdx": 1 },
