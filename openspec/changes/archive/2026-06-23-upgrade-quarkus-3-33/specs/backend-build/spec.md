@@ -1,3 +1,5 @@
+## MODIFIED Requirements
+
 ### Requirement: Backend compiles and runs on Java 25
 The backend SHALL compile and start successfully when the local JDK is Java 25 or newer, using Quarkus 3.33 (LTS).
 
