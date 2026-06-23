@@ -21,6 +21,7 @@ The compile step is the only place that resolves identities to positions, unroll
 
 ## Running locally
 
+**Frontend:**
 ```bash
 cd frontend
 npm install   # first time only
@@ -29,14 +30,32 @@ npm run dev   # → http://localhost:5173
 
 Opens the chord player with a hand-crafted Photograph (Nickelback) fixture. The YouTube embed loads automatically; hit play and watch chords highlight in sync.
 
+**Backend:**
+```bash
+cd backend
+./mvnw quarkus:dev   # → http://localhost:8080
+```
+
+Starts the Quarkus dev server with hot reload. The API is available at `http://localhost:8080`; the OpenAPI spec at `http://localhost:8080/q/openapi`.
+
 ## Commands
 
 ```bash
-# All run from frontend/
+# Frontend — run from frontend/
 npm run dev      # Vite dev server → http://localhost:5173
 npm run build    # Type-check + production build → frontend/dist/
 npm run lint     # ESLint
+
+# Backend — run from backend/
+./mvnw quarkus:dev   # Dev server with hot reload → http://localhost:8080
+./mvnw test          # Run tests
+./mvnw package       # Production build → target/quarkus-app/
 ```
+
+## Backend conventions
+
+- Prefer `application.yml` over `application.properties` for Quarkus config.
+- Prefer properties-based configuration over Java `@Singleton` config beans whenever the framework supports it (e.g., `quarkus.jackson.serialization-inclusion: non-null` instead of an `ObjectMapperCustomizer` class).
 
 ## Development workflow: OpenSpec (spec-driven)
 

@@ -1,0 +1,7 @@
+quarkus:
+  http:
+    cors:
+      ~: true
+      origins: http://localhost:5173
+  jackson:
+    serialization-inclusion: non-null
