@@ -197,7 +197,11 @@ These shape the sync model, so decide them up front even if implemented later:
   - Refs: Repp 2005 SMS review; Repp & Su 2013; music-vs-metronome NMA
     (PMC12083085).
 - **Re-tap from chord N** *(confirmed — wanted)* — a mistake shouldn't cost the
-  whole song. Move the capture cursor back to N and resume.
+  whole song. Move the capture cursor back to N and resume. **Correction flow:**
+  scrub the audio back past the chord(s) to fix, select the first chord to
+  re-tap, then resume tapping forward from that point. No separate fine-tuning
+  mode — correction IS tapping. No tap timeline or waveform is shown; the
+  advancing chord highlight is the sole feedback surface.
 - **Guided / prompted capture** *(confirmed — preferred model)* — the system
   drives a cursor through the *known* unrolled chord sequence: the **next chord
   is highlighted**, each tap timestamps the highlighted chord and advances to the
@@ -255,39 +259,61 @@ recording.
 
 ---
 
-## 10. Open area: multi-author sync, ownership & moderation
+## 10. Multi-author model: ownership, syncs & governance
 
-> Not a v1 concern, but it shapes the data model, so it's parked here explicitly.
+The system is **multi-author by nature** with two independently-contributed
+artifacts:
 
-The system is **multi-author by nature**. Two independent contributions exist and
-should be separable:
+1. A user supplies a **transcription** (ChordPro source — their interpretation
+   of the song).
+2. A *different* user may supply **a sync** to someone else's transcription.
 
-1. A user supplies a **ChordPro file** (possibly with their own sync).
-2. A *different* user supplies **their own sync** to someone else's chord file.
+### 10.1 Ownership & attribution
 
-Because source and sync are already separate artifacts (§4), this is a natural
-fit — but it raises governance questions with no v1 answer yet:
+- A transcription is **owned by its author**. Only the owner may edit it
+  directly.
+- **Anyone may attach a sync** to any transcription. The sync author is
+  independent of the transcription author.
+- A sync is pinned to a specific transcription version via `sourceHash`.
 
-- **Identity & attribution.** A sync is authored *against a specific source
-  version* (we already carry `sourceHash`). A sidecar likely needs an `author`
-  and a stable reference to *which* chord file + version it binds to.
-- **Canonical selection.** When multiple syncs exist for one song, which is
-  "the" one? Curated-canonical, votes, per-user default, or just "all of them,
-  pick in UI"?
-- **Edit permissions.** Who may edit the source vs. fork it? Who may attach a
-  sync? Owner-only source edits with open sync contribution is one plausible
-  default.
-- **Moderation.** Is it needed at all at first? If user-generated content is
-  shared publicly, eventually yes (spam, mis-syncs, copyright). Keep the hook in
-  mind; don't build it in v1.
-- **Forking.** Editing someone's source probably means *forking* it (new
-  identity), which interacts with how existing syncs follow or detach.
+### 10.2 Canonical sync selection
 
-**Data-model implication to keep in mind now:** treat a song as a small graph —
-`source` (versioned, owned) ← many `sync` sidecars (versioned, owned, each
-pinned to a source version) — rather than a single owned blob. Even if v1 only
-ever stores one source + one sync, modeling them as separable, individually
-attributable records avoids a painful migration later.
+No curated canonical. The **top-rated sync per audio source** (YouTube,
+Spotify, …) surfaces naturally through ratings and appears as a deep-link badge
+in the browse view. Users may always select a different sync from the
+transcription page.
+
+### 10.3 Forking vs. suggesting changes
+
+To discourage unnecessary proliferation of transcriptions, two explicit paths:
+
+**Suggest a change** (preferred path):
+- A fork-with-intent-to-merge workflow, analogous to a pull request.
+- On acceptance, the system attempts to **rebase all existing syncs** onto the
+  updated transcription (sequence-align old ↔ new occurrences).
+- If all occurrences map: rebased syncs carry over; original sync authors are
+  notified of the outcome.
+- If any occurrence is unmapped: the sync is **binned**; the original sync
+  author is notified and may re-tap if desired.
+- The suggestion contributor is **credited** on the transcription; sync
+  ownership remains with the original authors.
+
+**Fork** (own interpretation):
+- Creates a new transcription with its own identity.
+- **No syncs transfer.** This cost is intentional — it discourages trivial
+  forks and keeps community sync effort consolidated.
+
+### 10.4 Data-model implication
+
+Model a "song" as a graph: `transcription` (versioned, owned) ← many `sync`
+sidecars (versioned, each pinned to a transcription version, individually
+owned). Even if v1 only ever stores one transcription + one sync, this
+structure avoids a painful migration when multi-author features land.
+
+### 10.5 Moderation
+
+Deferred. Public user-generated content will eventually need spam and copyright
+controls. The hook is in mind; nothing is built in v1.
 
 ---
 
@@ -299,6 +325,110 @@ attributable records avoids a painful migration later.
 | 2 | Source descriptor (§9.2) | **Polymorphic from day one** | 2026-06-22 | YouTube v1; Spotify eventual |
 | 3 | Editor (CodeMirror?) | _leaning yes_ | | §6.1 |
 | 4 | v1 unroll scope | _inline-only_ | | §5 |
-| 5 | Song as source+sync graph (§10) | _leaning yes (model now, defer features)_ | | Multi-author |
-| 6 | Canonical sync selection (§10) | _TBD_ | | Post-v1 |
-| 7 | Moderation (§10) | _TBD — hook in mind, not built_ | | Post-v1 |
+| 5 | Song as source+sync graph (§10) | **Yes — model now, defer features** | 2026-06-24 | §10.4 |
+| 6 | Canonical sync selection (§10) | **Rating-based; top per source = badge** | 2026-06-24 | §10.2, §12.2 |
+| 7 | Moderation (§10) | **Deferred — hook in mind, not built** | 2026-06-24 | §10.5 |
+| 8 | Rating gate | **No gate; login + 1 vote/user/subject** | 2026-06-24 | §13.2 |
+| 9 | Sync transfer on fork | **None — intentional friction** | 2026-06-24 | §10.3 |
+| 10 | Sync rebase on suggestion | **Attempt rebase; bin on failure; notify** | 2026-06-24 | §10.3 |
+| 11 | Song entity | **Computed grouping from tags — no entity** | 2026-06-24 | §12.1 |
+| 12 | Tag storage | **ChordPro directives are authoritative; DB is read-only index** | 2026-06-24 | §12.3 |
+| 13 | Tap correction model | **Scrub + re-select + re-tap; no fine-tune mode** | 2026-06-24 | §8 |
+
+---
+
+## 12. Discoverability & browse model
+
+### 12.1 Entity model
+
+Three primary citizens — **Transcription**, **Sync**, and **Tag**. "Song" is a
+computed grouping, not a stored entity.
+
+```
+Transcription
+  id · author · source (ChordPro) · fork_of? · rating
+
+Sync
+  id · transcription_id · source_kind · source_id
+  author · taps[] · sourceHash · rating
+
+Tag
+  transcription_id · key (artist | title | key | capo | …) · value
+```
+
+**Song** in the browse view = all transcriptions sharing the same
+`(normalized artist_tag, normalized title_tag)` pair. No Song entity is stored.
+
+### 12.2 Browse structure
+
+UG-style hierarchy driven entirely by tags:
+
+```
+[Artist: Ed Sheeran]
+  Photograph               user1  ****   [YT ▶] [SP ▶]
+  Photograph (A minor)     user2  ***    [YT ▶]
+
+[Artist: Nickelback]
+  Photograph               user3  ****   [YT ▶]
+```
+
+Each row is a transcription. The star rating is the **transcription rating**.
+Each badge is the top-rated sync for that source — a deep-link to the
+transcription page with that sync preselected.
+
+### 12.3 Tag storage & normalization
+
+Tags originate **in the ChordPro source file** using standard metadata
+directives. The database is a **read-only search index** extracted from the
+source — not a separate store that needs to stay in sync.
+
+- **Required directives:** `{artist:}` and `{title:}` are mandatory fields on
+  every transcription. The UI should enforce this at save time.
+- **Supported directives:** `{key:}`, `{capo:}`, and any other standard
+  ChordPro metadata directives are extracted and indexed.
+- **Flow is unidirectional: source → DB.** The source file is the single
+  authoritative tag store. The DB index is derived from it; nothing flows back.
+- **On save:** extract directives from the source, update the DB index. If
+  `artist` or `title` changed, **notify the user** — these changes affect how
+  the transcription is grouped and surfaced in the browse view.
+- **No export injection needed.** Tags are already in the file; exporting the
+  ChordPro source exports the tags verbatim.
+- **Normalization for grouping:** the browse-view grouping key
+  `(artist, title)` is derived from lightly normalized tag values (case
+  folding, whitespace trimming) so that minor variations in authoring don't
+  scatter the same song across multiple groups. UI autocomplete on the
+  directives reinforces convergence. Moderation as backstop.
+- **No authoritative external song database.** Normalization plus UX nudges
+  is expected to produce sufficient quality without external curation.
+
+### 12.4 Transcription page
+
+A single page combining playback and sync selection — no separate browse-vs-player
+routes. The active sync is identified by a `?sync=<id>` query param (fully
+deep-linkable). Users switch syncs without leaving the page, which promotes
+discovery of alternative syncs and lowers the bar for adding their own.
+
+On desktop, the sync list and chord display sit side by side. On mobile, the
+player and chord display take centre stage; the sync list is accessible but
+secondary (e.g. bottom drawer or collapsed panel).
+
+---
+
+## 13. Rating model
+
+### 13.1 Two independent rating dimensions
+
+| Dimension | Rates | Surfaced where |
+|---|---|---|
+| Transcription rating | Quality, completeness, chord selection | Main browse listing |
+| Sync rating | Timing accuracy for the given audio source | Per-source badge |
+
+Rated separately. A great transcription with a poor sync is still a great
+transcription — and an invitation to add a better sync.
+
+### 13.2 Constraints
+
+- **Login required** to cast a vote. No anonymous ratings.
+- **One vote per user per subject** (transcription or sync). No repeat voting.
+- **No playthrough gate (v1).** Login + single-vote restriction is expected to
+  produce sufficient signal quality without a mandatory playthrough requirement.
