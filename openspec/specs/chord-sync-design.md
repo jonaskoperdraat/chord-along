@@ -51,68 +51,117 @@ This problem has two regimes that want different tools (see §6).
 
 ---
 
-## 4. The three artifacts
+## 4. The four artifacts
 
-### 4.1 Source — `*.chordpro`
+There are two **stored** artifacts (authoritative, never served directly to
+the player) and two **derived** artifacts (regenerated on change,
+CDN-cached, all the player ever fetches).
+
+```
+STORED                              DERIVED + CDN-CACHED
+──────────────────────────────      ──────────────────────────────────────
+source.chordpro                     transcription.bundle.json
+  human-authored text                 parsed, unrolled structure
+  no timestamps                       lines[] + occurrences[]
+  the editable truth                  shared across all syncs
+
+sync.anchors.json  (per sync)       sync.play.json  (per sync)
+  rich anchor tuples                  flat timestamps array
+  used only for rebase                trivially derived from anchors
+  never served to player              tiny; what the player loads
+```
+
+The player joins the two derived artifacts at runtime. Switching syncs on the
+transcription page is a client-side operation — swap the timestamps array,
+no re-fetch of the transcription bundle.
+
+### 4.1 Source — `source.chordpro`
 Plain ChordPro. **No sync data.** Also the import/export unit. Portability is a
-priority (see open question §9.1).
+priority (see resolved decision §9.1).
 
-### 4.2 Playback bundle — `*.play.json`
-Compiled, denormalized, tiny, **immutable per version**, cache-forever. The read
-path never touches anything heavier than this.
+### 4.2 Transcription bundle — `transcription.bundle.json`
+Derived from the ChordPro source. **CDN-cached; regenerated when the source
+changes.** One per transcription, shared across every sync that targets it.
 
 ```json
 {
   "source": { "kind": "youtube", "videoId": "…", "offsetSec": 0 },
-  "version": 7,
+  "version": 3,
   "lines": [
     { "section": "verse1", "slots": [
-      { "chord": "Am", "text": "Look at", "t": 1.23 },
-      { "chord": "C",  "text": " this",   "t": 2.05 },
-      { "text": " photograph" }
+      { "chord": "Am", "text": "Look at",     "occurrenceIdx": 0 },
+      { "chord": "C",  "text": " this",       "occurrenceIdx": 1 },
+      { "text":  " photograph" }
     ]}
+  ],
+  "occurrences": [
+    { "occurrenceIdx": 0, "lineIdx": 0, "slotIdx": 0, "chord": "Am" },
+    { "occurrenceIdx": 1, "lineIdx": 0, "slotIdx": 1, "chord": "C"  }
   ]
 }
 ```
 
-- **End times are implicit** — the next slot bearing a `t`. Computed client-side.
-- For fast "what chord is playing now?", optionally bake a flat sorted index so
-  the player binary-searches instead of walking the tree:
-  ```json
-  "events": [ { "t": 1.23, "lineIdx": 0, "slotIdx": 0 }, … ]
-  ```
-- Version + content-address or number the output (`song.play.v7.json`) for
-  CDN/cache friendliness.
+- `occurrences[]` is the **unrolled** chord sequence — after expanding repeats
+  and section references. In v1 (inline-only ChordPro) it equals source order.
+- Slots carry `occurrenceIdx` so the player can map from a live timestamp lookup
+  back to its visual position without walking the tree.
+- The player binary-searches `sync.play.json` timestamps to find the current
+  `occurrenceIdx`, then resolves `(lineIdx, slotIdx)` from this index.
+- Version the output URL (`/bundle/v3`) for CDN cache friendliness — old URLs
+  stay valid indefinitely.
 
-### 4.3 Binding sidecar — `*.sync.json`
-The **source map**. Edit-time only; **never served to the player**. Holds the
-heavy write-side data that keeps timestamps glued to occurrences across edits.
+### 4.3 Sync — two forms
+
+**Anchor form — `sync.anchors.json`** (stored; retrieved only for rebase)
 
 ```json
 {
+  "transcriptionVersion": 3,
   "source": { "kind": "youtube", "videoId": "…", "offsetSec": 0 },
-  "sourceHash": "sha256:…",
-  "occurrences": [
-    { "id": "o1", "chord": "Am", "anchorWord": "Look", "line": 0, "char": 0, "t": 1.23 }
+  "entries": [
+    { "ordinal": 0, "chord": "Am", "anchorWord": "Look", "section": "verse1", "t": 1.23 },
+    { "ordinal": 1, "chord": "C",  "anchorWord": "this", "section": "verse1", "t": 2.05 }
   ]
 }
 ```
 
-- `sourceHash` detects drift from the source file.
-- **v1 collapse:** for a first version that skips re-binding, this reduces to
-  `{ "source", "sourceHash", "taps": [1.23, 2.05, …] }`. The richer
-  `occurrences[]` form is derivable later — natural migration, no breaking change.
+- `transcriptionVersion` detects drift from the source; triggers rebase if
+  the transcription has since been edited.
+- The `(chord, anchorWord, section)` tuple is the identity key used during
+  sequence alignment (§6.2). Two identical chord names in the same section
+  become distinguishable by their lyric anchor.
+- Never served to the player. Fetched only when the author tooling needs to
+  rebase or re-edit timing.
+
+**Playback form — `sync.play.json`** (derived; CDN-cached)
+
+```json
+{
+  "transcriptionVersion": 3,
+  "timestamps": [1.23, 2.05, 3.11, …]
+}
+```
+
+- `timestamps[i]` is the start time for `occurrences[i]` in the transcription
+  bundle — pure ordinal mapping.
+- Trivially derived from the anchor form: sort entries by `ordinal`, pluck `t`.
+- Regenerated whenever the anchor form changes (new tap session, rebase
+  succeeds, manual timing edit).
+- `transcriptionVersion` lets the player detect a stale sync (bundle and play
+  versions disagree) and prompt the user.
 
 ---
 
 ## 5. Capture model: tapping
 
 Tapping produces an **ordinal** mapping: tap *i* = occurrence *i* in performance
-order. So **first capture needs no identity machinery** — just zip `taps[]`
-against the unrolled chord sequence.
+order. So **first capture needs no identity machinery** — just zip timestamps
+against the unrolled chord sequence from the transcription bundle.
 
-Consequence: all binding complexity lives in **re-editing**, not in capture. The
-MVP sync file can be nothing more than timestamps + a source hash.
+Consequence: all binding complexity lives in **re-editing**, not in capture. At
+capture time the anchor form is populated directly: each tap advances a cursor
+through `occurrences[]`, and the captured entry stores `(ordinal, chord,
+anchorWord, section, t)` in one step — no post-processing needed.
 
 **Important subtlety (affects the data model even in v1):** the tapped sequence
 is the **performed/unrolled** sequence. With `{chorus}` references or `x4`
@@ -122,6 +171,49 @@ binding, playback.
 
 > Easiest v1 scope: require fully inline ChordPro; treat repeat/reference
 > expansion as v2.
+
+---
+
+## 5b. Serving model and cache invalidation
+
+**Player fetch pattern:**
+
+```
+page load
+  ├─▶ GET /transcriptions/{id}/bundle     → transcription.bundle.json  (CDN)
+  └─▶ GET /syncs/{id}/play                → sync.play.json             (CDN)
+                                               (default: top-rated sync)
+
+user switches sync
+  └─▶ GET /syncs/{other-id}/play          → sync.play.json             (CDN)
+      transcription bundle already in memory — no re-fetch
+
+rebase / re-tap (author tooling only)
+  └─▶ GET /syncs/{id}/anchors             → sync.anchors.json          (not CDN)
+```
+
+**Regeneration triggers:**
+
+```
+transcription edit
+  └─▶ reparse ChordPro → new transcription.bundle.json (new version URL)
+  └─▶ for each attached sync:
+        align old anchor entries against new occurrences[]
+        ├─ all map → reassign ordinals → new sync.play.json
+        └─ any lost → bin sync, notify author
+
+new sync tapped
+  └─▶ store sync.anchors.json
+  └─▶ derive sync.play.json → cache
+
+manual timing edit
+  └─▶ update sync.anchors.json
+  └─▶ re-derive sync.play.json → cache
+```
+
+Cache invalidation is version-based: derived artifacts are addressed by version
+number in the URL. Old URLs remain valid (clients holding them keep working);
+new clients receive the new version. No CDN purge needed.
 
 ---
 
@@ -159,12 +251,13 @@ Fix the **separation** now (cheap conceptually, costly to retrofit); layer the
 **intelligence** in over time.
 
 ### v1
+- ChordPro parser → transcription bundle (`lines[]` + `occurrences[]`).
 - CodeMirror editor with ChordPro highlighting.
-- YouTube IFrame capture.
-- Ordinal tap → `taps[] + sourceHash`.
-- Compile to playback bundle.
-- Edits to a synced source either invalidate or naive-ordinal-remap, with
-  unsynced chords **visibly flagged**.
+- YouTube IFrame tap capture → `sync.anchors.json` (with anchor tuples).
+- Derive `sync.play.json` from anchors.
+- Player fetches transcription bundle + sync.play.json separately; joins at runtime.
+- Edits to a synced transcription attempt ordinal remap; unresolved chords
+  **visibly flagged**, sync binned if too many are lost.
 
 ### v1.5
 - Live position-mapping via editor marks → in-session nudging keeps timestamps
@@ -334,6 +427,10 @@ controls. The hook is in mind; nothing is built in v1.
 | 11 | Song entity | **Computed grouping from tags — no entity** | 2026-06-24 | §12.1 |
 | 12 | Tag storage | **ChordPro directives are authoritative; DB is read-only index** | 2026-06-24 | §12.3 |
 | 13 | Tap correction model | **Scrub + re-select + re-tap; no fine-tune mode** | 2026-06-24 | §8 |
+| 14 | Compiled artifact model | **No combined source+sync bundle; separate TranscriptionBundle and SyncData; player joins at runtime** | 2026-06-24 | §4 |
+| 15 | SyncData forms | **Two forms: anchor form stored (never CDN), playback form derived and CDN-cached; anchors retrieved only for rebase** | 2026-06-24 | §4.3 |
+| 16 | Transcription bundle | **Derived from ChordPro source; CDN-cached; contains `lines[]` + `occurrences[]` (unrolled); shared across all syncs** | 2026-06-24 | §4.2 |
+| 17 | Cache invalidation | **Version-based URL addressing; no CDN purge; old URLs remain valid** | 2026-06-24 | §5b |
 
 ---
 

@@ -85,7 +85,7 @@
             <configuration>
               <inputSpec>${project.basedir}/../api/openapi.yaml</inputSpec>
               <generatorName>jaxrs-spec</generatorName>
-              <output>${project.basedir}/src/gen</output>
+              <output>${project.build.directory}/generated-sources/openapi</output>
               <apiPackage>nl.jonaskoperdraat.chordalong.api</apiPackage>
               <modelPackage>nl.jonaskoperdraat.chordalong.model</modelPackage>
               <generateSupportingFiles>false</generateSupportingFiles>
@@ -98,25 +98,6 @@
                 <useMicroProfileOpenAPIAnnotations>false</useMicroProfileOpenAPIAnnotations>
                 <useSwaggerAnnotations>false</useSwaggerAnnotations>
               </configOptions>
-            </configuration>
-          </execution>
-        </executions>
-      </plugin>
-      <plugin>
-        <groupId>org.codehaus.mojo</groupId>
-        <artifactId>build-helper-maven-plugin</artifactId>
-        <version>3.6.0</version>
-        <executions>
-          <execution>
-            <id>add-gen-source</id>
-            <phase>generate-sources</phase>
-            <goals>
-              <goal>add-source</goal>
-            </goals>
-            <configuration>
-              <sources>
-                <source>${project.basedir}/src/gen/java</source>
-              </sources>
             </configuration>
           </execution>
         </executions>
