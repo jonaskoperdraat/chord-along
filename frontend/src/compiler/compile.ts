@@ -3,19 +3,23 @@ import type {
   TranscriptionBundle,
   Section,
   Line,
-  Slot,
+  Segment,
   Occurrence,
   SourceDescriptor,
 } from '../types/transcriptionBundle'
 
 const BUNDLE_VERSION = 1
 
-// chordsheetjs reports these paragraph types as non-section content (commentary,
-// blank separators, guitar tabs). Skip them entirely — only named section types
-// (verse, chorus, bridge, …) produce a Section in the output.
-const SKIP_PARAGRAPH_TYPES = new Set(['tab', 'indeterminate', 'none', ''])
+// 'tab' paragraphs (guitar tabs) are always skipped.
+// 'none', 'indeterminate', and '' paragraphs are not named sections but may
+// carry chord/annotation content between section directives; lines from those
+// paragraphs that contain at least one chord or annotation segment are emitted
+// as top-level Line blocks directly into the root body. Text-only lines in
+// non-section paragraphs (preamble comments, tuning notes, etc.) are still dropped.
+const SKIP_PARAGRAPH_TYPES = new Set(['tab'])
+const INLINE_PARAGRAPH_TYPES = new Set(['none', 'indeterminate', ''])
 
-// Extracts the first lyric word of a slot, used as the anchor that disambiguates
+// Extracts the first lyric word of a segment, used as the anchor that disambiguates
 // repeated chord names during sync rebase (see chord-sync-design.md §6.2).
 // Punctuation is stripped so "love," and "love" resolve to the same anchor.
 function anchorWord(lyrics: string | null | undefined): string | undefined {
@@ -40,13 +44,15 @@ function sectionLabel(label: string | null, type: string): string | undefined {
 // Prepares ChordPro source for chordsheetjs parsing. Returns the normalised
 // source and a table of extracted annotation strings.
 //
-// Step 1 — ChordPro [*CONTENT] annotations: chordsheetjs v15 does not
-//   implement the * prefix correctly. It crashes with "Cannot read properties
-//   of undefined (reading 'length')" whenever a [*CONTENT] annotation (with
-//   non-empty content) appears alongside real chords on the same line. We
-//   extract every [*CONTENT] occurrence up-front, replace each with a safe
-//   placeholder [__ANNOTn__], and return the content strings so the compiler
-//   can emit display-only annotation slots without occurrenceIdx.
+// Step 1 — ChordPro [*CONTENT] annotations: chordsheetjs v15 crashes when a
+//   [*CONTENT] annotation with non-empty content appears alongside real chords
+//   on the same line and the parser is invoked with { chopFirstWord: false }.
+//   The crash occurs inside combinableChordLyricsPairs, which reads
+//   itemA.chords.length on the annotation item — but for annotation items
+//   chordsheetjs sets item.chords to undefined rather than a string, so the
+//   property access throws. We extract every [*CONTENT] up-front, replace each
+//   with a safe placeholder [__ANNOTn__] that parses as a normal chord name, and
+//   return the content strings so the compiler can emit display-only Segments.
 //
 // Step 2 — Space-only lines: chordsheetjs merges a section directive into the
 //   preceding paragraph when it is separated only by whitespace-only lines
@@ -76,72 +82,104 @@ export function compile(
   // chopFirstWord: false keeps leading lyric text on the first chord-lyric pair
   // rather than splitting it into a standalone prefix item. Without this,
   // "Look at this [E]photograph" would produce a bare "Look at this" token
-  // before the first chord, which doesn't match our Slot model.
+  // before the first chord, which doesn't match our Segment model.
   const song = new ChordProParser().parse(normalized, { chopFirstWord: false })
 
-  const sections: Section[] = []
+  const rootBody: (Section | Line)[] = []
   const occurrences: Occurrence[] = []
   let occurrenceIdx = 0
+
+  function buildSegments(
+    songLine: (typeof song.bodyParagraphs)[0]['lines'][0],
+    makePath: (segmentCount: number) => number[],
+  ): { segments: Segment[]; lineOccs: Occurrence[]; hasChordOrAnnotation: boolean } {
+    const segments: Segment[] = []
+    const lineOccs: Occurrence[] = []
+    let hasChordOrAnnotation = false
+
+    for (const item of songLine.items) {
+      if (!(item instanceof ChordLyricsPair)) continue
+      const chord = item.chords || undefined
+      const text = item.lyrics ?? undefined
+
+      if (chord) {
+        const annotMatch = chord.match(ANNOT_RE)
+        if (annotMatch) {
+          const display = annotations[parseInt(annotMatch[1])]
+          if (display) {
+            // Non-empty [*CONTENT] annotation: display-only, no occurrenceIdx.
+            const seg: Segment = { annotation: display }
+            if (text !== undefined) seg.text = text
+            segments.push(seg)
+            hasChordOrAnnotation = true
+          }
+          // Empty annotation (bare [*]) → skip entirely.
+        } else {
+          const seg: Segment = { chord, occurrenceIdx }
+          if (text !== undefined) seg.text = text
+          segments.push(seg)
+          lineOccs.push({
+            occurrenceIdx,
+            path: makePath(lineOccs.length),
+            segmentIdx: segments.length - 1,
+            chord,
+            anchorWord: anchorWord(text),
+          })
+          occurrenceIdx++
+          hasChordOrAnnotation = true
+        }
+      } else if (text !== undefined) {
+        segments.push({ text })
+      }
+    }
+
+    return { segments, lineOccs, hasChordOrAnnotation }
+  }
 
   for (const paragraph of song.bodyParagraphs) {
     if (SKIP_PARAGRAPH_TYPES.has(paragraph.type)) continue
 
-    const label = sectionLabel(paragraph.label, paragraph.type)
-    const sectionLines: Line[] = []
-    const sectionIdx = sections.length
-
-    for (const songLine of paragraph.lines) {
-      const slots: Slot[] = []
-      let hasContent = false
-
-      for (const item of songLine.items) {
-        if (!(item instanceof ChordLyricsPair)) continue
-        const chord = item.chords || undefined
-        const text = item.lyrics ?? undefined
-        hasContent = true
-
-        if (chord) {
-          const annotMatch = chord.match(ANNOT_RE)
-          if (annotMatch) {
-            // ChordPro [*CONTENT] annotation — display text only, not a sync
-            // occurrence. Shown in the chord row like a chord name but never
-            // highlighted and needs no timestamp.
-            const display = annotations[parseInt(annotMatch[1])]
-            if (display) {
-              const slot: Slot = { chord: display }
-              if (text !== undefined) slot.text = text
-              slots.push(slot)
-            }
-          } else {
-            const slot: Slot = { chord, occurrenceIdx }
-            if (text !== undefined) slot.text = text
-            slots.push(slot)
-            occurrences.push({
-              occurrenceIdx,
-              sectionIdx,
-              lineIdx: sectionLines.length,
-              slotIdx: slots.length - 1,
-              chord,
-              anchorWord: anchorWord(text),
-            })
-            occurrenceIdx++
-          }
+    if (INLINE_PARAGRAPH_TYPES.has(paragraph.type)) {
+      // Non-section paragraph: emit lines with chord/annotation content into root body.
+      // Text-only lines (preamble, tuning notes, etc.) are dropped.
+      for (const songLine of paragraph.lines) {
+        const rootIdx = rootBody.length
+        const { segments, lineOccs, hasChordOrAnnotation } = buildSegments(
+          songLine,
+          () => [rootIdx],
+        )
+        if (hasChordOrAnnotation && segments.length > 0) {
+          rootBody.push({ kind: 'line', segments })
+          occurrences.push(...lineOccs)
         } else {
-          const slot: Slot = {}
-          if (text !== undefined) slot.text = text
-          slots.push(slot)
+          // Roll back occurrenceIdx for any chord segments on a discarded line.
+          occurrenceIdx -= lineOccs.length
+        }
+      }
+    } else {
+      // Named section paragraph: collect all lines into a Section block.
+      const label = sectionLabel(paragraph.label, paragraph.type)
+      const sectionRootIdx = rootBody.length
+      const sectionBody: Line[] = []
+
+      for (const songLine of paragraph.lines) {
+        const lineIdx = sectionBody.length
+        const { segments, lineOccs } = buildSegments(
+          songLine,
+          () => [sectionRootIdx, lineIdx],
+        )
+        if (segments.length > 0) {
+          sectionBody.push({ kind: 'line', segments })
+          occurrences.push(...lineOccs)
         }
       }
 
-      if (hasContent && slots.length > 0) {
-        sectionLines.push({ slots })
+      if (sectionBody.length > 0) {
+        const section: Section = { kind: 'section', body: sectionBody }
+        if (label) section.label = label
+        if (paragraph.type) section.type = paragraph.type
+        rootBody.push(section)
       }
-    }
-
-    if (sectionLines.length > 0) {
-      const section: Section = { lines: sectionLines }
-      if (label) section.label = label
-      sections.push(section)
     }
   }
 
@@ -154,7 +192,7 @@ export function compile(
       key: song.key ?? undefined,
       capo: firstString(song.capo),
     },
-    sections,
+    body: { kind: 'section', body: rootBody },
     occurrences,
   }
 }

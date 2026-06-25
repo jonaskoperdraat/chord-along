@@ -1,4 +1,4 @@
-## Requirements
+## MODIFIED Requirements
 
 ### Requirement: TranscriptionBundle structure
 A `TranscriptionBundle` SHALL conform to the following shape:
@@ -108,52 +108,8 @@ playback.
 - **WHEN** a ChordPro source contains `[*Fine]`
 - **THEN** the compiled bundle contains a `Segment` with `annotation: "Fine"` (verbatim)
 
-### Requirement: SyncPlayData structure
-A `SyncPlayData` object SHALL conform to:
+## REMOVED Requirements
 
-```typescript
-{
-  transcriptionVersion?: number   // optional; enables stale-sync detection
-  timestamps:            number[] // timestamps[i] = start time (seconds) for occurrences[i]
-}
-```
-
-`timestamps.length` SHALL equal `bundle.occurrences.length` for a fully-tapped
-sync. A partially-tapped sync may be shorter; missing entries mean those
-occurrences have no timing yet.
-
-#### Scenario: timestamps array length matches occurrences
-- **WHEN** a sync is complete (all chords tapped)
-- **THEN** `syncPlay.timestamps.length === bundle.occurrences.length`
-
-#### Scenario: Partial sync is valid
-- **WHEN** a sync session was interrupted before all chords were tapped
-- **THEN** `syncPlay.timestamps.length < bundle.occurrences.length` is accepted without error
-
-### Requirement: Player joins TranscriptionBundle and SyncPlayData at runtime
-The player SHALL accept a `TranscriptionBundle` and a `SyncPlayData` as
-independent inputs. It SHALL NOT require them to be pre-merged. The active
-occurrence is determined by binary-searching `SyncPlayData.timestamps` for the
-current playback position, yielding an `occurrenceIdx`, which is then resolved to
-`(path, segmentIdx)` via `bundle.occurrences`.
-
-#### Scenario: Correct segment is highlighted for current time
-- **WHEN** the playback position is between `timestamps[i]` and `timestamps[i+1]`
-- **THEN** the segment at `resolveLine(bundle.body, bundle.occurrences[i].path).segments[bundle.occurrences[i].segmentIdx]` is highlighted
-
-#### Scenario: Switching sync does not reload the bundle
-- **WHEN** the user selects a different `SyncPlayData` for the same `TranscriptionBundle`
-- **THEN** only the `SyncPlayData` reference changes; the bundle is not re-fetched or re-parsed
-
-### Requirement: Version field
-Every `TranscriptionBundle` SHALL carry a `version` field (integer, starting at 1).
-The player SHALL log a console warning (not throw) when it encounters a version it
-does not recognise.
-
-#### Scenario: Known version loads silently
-- **WHEN** the player loads a bundle with a known `version`
-- **THEN** no warning is logged
-
-#### Scenario: Unknown version logs a warning
-- **WHEN** the player loads a bundle with an unrecognised `version`
-- **THEN** the player logs a console warning and attempts to render the bundle anyway
+### Requirement: (implicit) sections[] is the top-level content array
+**Reason**: Replaced by `body: Section` (a single root section containing all content). The flat `sections[]` array could not represent content between section directives.
+**Migration**: Replace all `bundle.sections` access with iteration over `bundle.body.body`; filter for `block.kind === 'section'` where section-specific behavior is needed.

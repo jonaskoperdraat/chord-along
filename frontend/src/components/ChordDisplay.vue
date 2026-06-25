@@ -1,7 +1,8 @@
 <script setup lang="ts">
 import { computed } from 'vue'
-import type { TranscriptionBundle } from '../types/transcriptionBundle'
+import type { TranscriptionBundle, Section, Line } from '../types/transcriptionBundle'
 import type { ActiveEvent } from '../composables/usePlaybackEngine'
+import { resolveLine } from '../utils/bundleUtils'
 
 const props = defineProps<{
   bundle: TranscriptionBundle
@@ -10,12 +11,12 @@ const props = defineProps<{
   activeProgress: number
 }>()
 
-function isActive(sectionIdx: number, lineIdx: number, slotIdx: number): boolean {
+function isActive(path: number[], segmentIdx: number): boolean {
   return (
     props.activeEvent !== null &&
-    props.activeEvent.sectionIdx === sectionIdx &&
-    props.activeEvent.lineIdx === lineIdx &&
-    props.activeEvent.slotIdx === slotIdx
+    props.activeEvent.segmentIdx === segmentIdx &&
+    props.activeEvent.path.length === path.length &&
+    props.activeEvent.path.every((v, i) => v === path[i])
   )
 }
 
@@ -26,66 +27,103 @@ interface SegmentInfo {
 }
 
 // segmentMap: for each chord occurrence i, compute the fill fraction
-// [fillStart, fillEnd] for every slot in its "territory".
+// [fillStart, fillEnd] for every segment in its "territory".
 //
-// A chord occurrence owns all slots from its own position up to (but not
-// including) the next occurrence. Because a song line can start mid-way
-// through a section and slots are not confined to a single line, the walk
-// advances through three nested coordinates: sectionIdx → lineIdx → slotIdx.
-// When slotIdx overflows a line it resets to 0 and lineIdx advances; when
-// lineIdx overflows a section it resets to 0 and sectionIdx advances.
-// The last occurrence's territory extends to the very end of the bundle.
+// A chord occurrence owns all segments from its own position up to (but not
+// including) the next occurrence. The walk advances through segments within a
+// line, then moves to the next line via occurrence paths.
 //
 // Fill fractions are proportional to character length so that a long lyric
 // token consumes more of the progress bar than a short chord token.
+//
+// Annotation segments are display-only and are skipped in the segmentMap
+// (they never get an active class or progress bar).
 const segmentMap = computed<Map<string, SegmentInfo>>(() => {
   const map = new Map<string, SegmentInfo>()
-  const { occurrences, sections } = props.bundle
+  const { occurrences, body } = props.bundle
 
   for (let i = 0; i < occurrences.length; i++) {
+    const occ = occurrences[i]
     const nextOcc = occurrences[i + 1] ?? null
 
-    let sectionIdx = occurrences[i].sectionIdx
-    let lineIdx = occurrences[i].lineIdx
-    let slotIdx = occurrences[i].slotIdx
+    let path = [...occ.path]
+    let segmentIdx = occ.segmentIdx
 
-    const segments: Array<{ sectionIdx: number; lineIdx: number; slotIdx: number; charLen: number }> = []
+    const segments: Array<{ path: number[]; segmentIdx: number; charLen: number }> = []
 
     // Walk forward from this occurrence until we reach the next occurrence
     // or run off the end of the bundle.
     while (true) {
-      if (nextOcc &&
-          sectionIdx === nextOcc.sectionIdx &&
-          lineIdx === nextOcc.lineIdx &&
-          slotIdx === nextOcc.slotIdx) break
-      if (sectionIdx >= sections.length) break
+      // Check if we've reached the next occurrence's position
+      if (
+        nextOcc &&
+        nextOcc.path.length === path.length &&
+        nextOcc.path.every((v, j) => v === path[j]) &&
+        segmentIdx === nextOcc.segmentIdx
+      ) break
 
-      const section = sections[sectionIdx]
-      if (lineIdx >= section.lines.length) {
-        console.warn('[chord-along] segmentMap: lineIdx out of bounds — bundle may be malformed', { sectionIdx, lineIdx, occurrenceIdx: i })
+      // Try to resolve the current line; bail out if path is out of range
+      let line: Line
+      try {
+        line = resolveLine(body, path)
+      } catch {
         break
       }
 
-      const slot = section.lines[lineIdx].slots[slotIdx]
-      const charLen = Math.max(slot.chord?.length ?? 0, slot.text?.length ?? 0, 1)
-      segments.push({ sectionIdx, lineIdx, slotIdx, charLen })
+      if (segmentIdx >= line.segments.length) {
+        // Advance to next line: find the next occurrence after current path
+        // by incrementing the last path index
+        const nextPath = [...path]
+        nextPath[nextPath.length - 1]++
 
-      slotIdx++
-      if (slotIdx >= section.lines[lineIdx].slots.length) {
-        lineIdx++
-        slotIdx = 0
+        // Check if next path index is still valid
+        let valid = false
+        try {
+          resolveLine(body, nextPath)
+          valid = true
+        } catch {
+          // Try going up a level and advancing (for nested sections)
+          if (nextPath.length > 1) {
+            // Move to next section
+            const outerPath = [nextPath[0] + 1]
+            try {
+              const outerBlock = body.body[outerPath[0]]
+              if (outerBlock && outerBlock.kind === 'section') {
+                // Descend into first line of next section
+                const innerPath = [outerPath[0], 0]
+                resolveLine(body, innerPath)
+                nextPath.splice(0, nextPath.length, ...innerPath)
+                valid = true
+              } else if (outerBlock && outerBlock.kind === 'line') {
+                nextPath.splice(0, nextPath.length, ...outerPath)
+                valid = true
+              }
+            } catch {
+              // out of bounds — stop
+            }
+          }
+        }
+
+        if (!valid) break
+        path = nextPath
+        segmentIdx = 0
+        continue
       }
-      if (lineIdx >= section.lines.length) {
-        sectionIdx++
-        lineIdx = 0
-        slotIdx = 0
+
+      const seg = line.segments[segmentIdx]
+      // Skip annotation-only segments — they are display-only and never get active/progress
+      if (!seg.annotation || seg.chord || seg.text) {
+        const charLen = Math.max(seg.chord?.length ?? 0, seg.text?.length ?? 0, 1)
+        segments.push({ path: [...path], segmentIdx, charLen })
       }
+
+      segmentIdx++
     }
 
     const totalChars = segments.reduce((sum, s) => sum + s.charLen, 0)
     let cumulative = 0
     for (const seg of segments) {
-      map.set(`${seg.sectionIdx}:${seg.lineIdx}:${seg.slotIdx}`, {
+      map.set(`${seg.path.join(',')}:${seg.segmentIdx}`, {
         eventIdx: i,
         fillStart: cumulative / totalChars,
         fillEnd: (cumulative + seg.charLen) / totalChars,
@@ -97,9 +135,9 @@ const segmentMap = computed<Map<string, SegmentInfo>>(() => {
   return map
 })
 
-function slotProgressWidth(sectionIdx: number, lineIdx: number, slotIdx: number): string {
+function segmentProgressWidth(path: number[], segmentIdx: number): string {
   if (props.activeEventIdx === null) return '0%'
-  const info = segmentMap.value.get(`${sectionIdx}:${lineIdx}:${slotIdx}`)
+  const info = segmentMap.value.get(`${path.join(',')}:${segmentIdx}`)
   if (!info || info.eventIdx !== props.activeEventIdx) return '0%'
   const { fillStart, fillEnd } = info
   const local =
@@ -108,40 +146,89 @@ function slotProgressWidth(sectionIdx: number, lineIdx: number, slotIdx: number)
       : Math.max(0, Math.min(1, (props.activeProgress - fillStart) / (fillEnd - fillStart)))
   return `${local * 100}%`
 }
+
+// Type guard helpers for the template
+function isLine(block: unknown): block is Line {
+  return (block as { kind: string }).kind === 'line'
+}
+
+function isSection(block: unknown): block is Section {
+  return (block as { kind: string }).kind === 'section'
+}
 </script>
 
 <template>
   <div class="chord-sheet">
-    <div
-      v-for="(section, sectionIdx) in bundle.sections"
-      :key="sectionIdx"
-      class="section"
+    <template
+      v-for="(block, blockIdx) in bundle.body.body"
+      :key="blockIdx"
     >
+      <!-- Top-level line (no enclosing named section) -->
       <div
-        v-if="section.label"
-        class="section-label"
-      >
-        {{ section.label }}
-      </div>
-      <div
-        v-for="(line, lineIdx) in section.lines"
-        :key="lineIdx"
+        v-if="isLine(block)"
         class="line"
       >
-        <div class="slots">
+        <div class="segments">
           <div
-            v-for="(slot, slotIdx) in line.slots"
-            :key="slotIdx"
+            v-for="(segment, segIdx) in block.segments"
+            :key="segIdx"
             class="slot"
-            :class="{ active: isActive(sectionIdx, lineIdx, slotIdx) }"
+            :class="{ active: !segment.annotation && isActive([blockIdx], segIdx) }"
           >
-            <span class="chord">{{ slot.chord ?? ' ' }}</span>
-            <div class="progress-bar" :style="{ width: slotProgressWidth(sectionIdx, lineIdx, slotIdx) }" />
-            <span class="lyric">{{ slot.text ?? ' ' }}</span>
+            <span v-if="segment.chord" class="chord">{{ segment.chord }}</span>
+            <span v-else-if="segment.annotation" class="chord annotation">{{ segment.annotation }}</span>
+            <span v-else class="chord">&nbsp;</span>
+            <div
+              v-if="!segment.annotation"
+              class="progress-bar"
+              :style="{ width: segmentProgressWidth([blockIdx], segIdx) }"
+            />
+            <span class="lyric">{{ segment.text ?? ' ' }}</span>
           </div>
         </div>
       </div>
-    </div>
+
+      <!-- Named section: render label + iterate its lines -->
+      <div
+        v-else-if="isSection(block)"
+        class="section"
+      >
+        <div
+          v-if="block.label"
+          class="section-label"
+        >
+          {{ block.label }}
+        </div>
+        <template
+          v-for="(innerBlock, innerIdx) in block.body"
+          :key="innerIdx"
+        >
+          <div
+            v-if="isLine(innerBlock)"
+            class="line"
+          >
+            <div class="segments">
+              <div
+                v-for="(segment, segIdx) in innerBlock.segments"
+                :key="segIdx"
+                class="slot"
+                :class="{ active: !segment.annotation && isActive([blockIdx, innerIdx], segIdx) }"
+              >
+                <span v-if="segment.chord" class="chord">{{ segment.chord }}</span>
+                <span v-else-if="segment.annotation" class="chord annotation">{{ segment.annotation }}</span>
+                <span v-else class="chord">&nbsp;</span>
+                <div
+                  v-if="!segment.annotation"
+                  class="progress-bar"
+                  :style="{ width: segmentProgressWidth([blockIdx, innerIdx], segIdx) }"
+                />
+                <span class="lyric">{{ segment.text ?? ' ' }}</span>
+              </div>
+            </div>
+          </div>
+        </template>
+      </div>
+    </template>
   </div>
 </template>
 
@@ -167,7 +254,7 @@ function slotProgressWidth(sectionIdx: number, lineIdx: number, slotIdx: number)
   color: #888;
 }
 
-.slots {
+.segments {
   display: flex;
   flex-wrap: wrap;
   gap: 0 0.25rem;
@@ -193,6 +280,11 @@ function slotProgressWidth(sectionIdx: number, lineIdx: number, slotIdx: number)
   color: #f0c040;
   min-height: 1.2em;
   white-space: pre;
+}
+
+.chord.annotation {
+  color: #888;
+  font-weight: 400;
 }
 
 .slot.active .chord {

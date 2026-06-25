@@ -12,31 +12,42 @@ export interface SpotifySource {
 
 export type SourceDescriptor = YoutubeSource | SpotifySource
 
-export interface Slot {
-  chord?: string
+export interface Segment {
   text?: string
-  /** Index into TranscriptionBundle.occurrences[]. Present only on slots that carry a chord. */
+  chord?: string
+  /** Display-only marker from a ChordPro [*content] annotation (e.g. "|"). Never gets an occurrenceIdx. */
+  annotation?: string
+  /** Index into TranscriptionBundle.occurrences[]. Present only on segments that carry a chord. */
   occurrenceIdx?: number
 }
 
 export interface Line {
-  slots: Slot[]
+  kind: 'line'
+  segments: Segment[]
 }
 
 export interface Section {
+  kind: 'section'
+  /** Absent on the root section. */
   label?: string
-  lines: Line[]
+  /** 'verse' | 'chorus' | 'bridge' | … Absent on the root section. */
+  type?: string
+  body: Block[]
 }
+
+export type Block = Line | Section
 
 export interface Occurrence {
   /** Sequential index in the unrolled chord sequence. Matches the position in SyncPlayData.timestamps[]. */
   occurrenceIdx: number
-  /** Index into TranscriptionBundle.sections[]. */
-  sectionIdx: number
-  /** Index into TranscriptionBundle.sections[sectionIdx].lines[]. */
-  lineIdx: number
-  /** Index into TranscriptionBundle.sections[sectionIdx].lines[lineIdx].slots[]. */
-  slotIdx: number
+  /**
+   * Navigation path into bundle.body.body[] by successive array indices.
+   * Length 1: bundle.body.body[path[0]] is the Line.
+   * Length 2: (bundle.body.body[path[0]] as Section).body[path[1]] is the Line.
+   */
+  path: number[]
+  /** Index into the resolved Line's segments[]. */
+  segmentIdx: number
   chord: string
   /**
    * First lyric word directly following this chord (punctuation stripped).
@@ -57,7 +68,8 @@ export interface TranscriptionBundle {
   source: SourceDescriptor
   version: number
   metadata: BundleMetadata
-  sections: Section[]
+  /** Root section — always present, never has a label or type. All song content lives here. */
+  body: Section
   occurrences: Occurrence[]
 }
 

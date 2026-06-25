@@ -1,41 +1,79 @@
 import { describe, it, expect } from 'vitest'
 import { compile } from '../compiler'
-import type { YoutubeSource, SpotifySource } from '../types/transcriptionBundle'
+import type { YoutubeSource, SpotifySource, Section, Line } from '../types/transcriptionBundle'
 
-// All tests that exercise chord-lyric content wrap the input in a section
-// directive. The compiler skips indeterminate paragraphs (no section tag) to
-// filter out ChordPro commentary text; real content lives inside sections.
+// All tests that exercise named sections wrap the input in a section directive.
+// Bare chord lines outside any section directive are emitted as top-level Line
+// blocks in body.body[].
 
 const VERSE = (body: string) => `{start_of_verse}\n${body}\n{end_of_verse}`
 const CHORUS = (body: string) => `{start_of_chorus}\n${body}\n{end_of_chorus}`
 
 // ---------------------------------------------------------------------------
+// Navigation helpers
+// ---------------------------------------------------------------------------
+
+/** Return a named Section block from the root body at the given index. */
+function getSection(result: ReturnType<typeof compile>, rootIdx: number): Section {
+  return result.body.body[rootIdx] as Section
+}
+
+/** Return a Line inside a named section. */
+function getLine(result: ReturnType<typeof compile>, sectionRootIdx: number, lineIdx: number): Line {
+  const section = getSection(result, sectionRootIdx)
+  return section.body[lineIdx] as Line
+}
+
+/** Return a top-level Line block (kind='line') from root body. */
+function getTopLevelLine(result: ReturnType<typeof compile>, rootIdx: number): Line {
+  return result.body.body[rootIdx] as Line
+}
+
+// ---------------------------------------------------------------------------
 // 3.1 Chord-lyric pair mapping
 // ---------------------------------------------------------------------------
 
-describe('compile — chord-lyric slot mapping', () => {
-  it('maps a mixed chord+lyric line to correct slots', () => {
-    const result = compile(VERSE('[Am]Look at this [C]photograph'))
-    expect(result.sections[0].lines[0].slots).toEqual([
+describe('compile — chord-lyric segment mapping', () => {
+  it('maps a mixed chord+lyric line to correct segments', () => {
+    // Given
+    const source = VERSE('[Am]Look at this [C]photograph')
+
+    // When
+    const result = compile(source)
+
+    // Then
+    expect(getLine(result, 0, 0).segments).toEqual([
       { chord: 'Am', text: 'Look at this ', occurrenceIdx: 0 },
       { chord: 'C', text: 'photograph', occurrenceIdx: 1 },
     ])
   })
 
-  it('maps a lyric-only line to a single slot with no chord or occurrenceIdx', () => {
-    const result = compile(VERSE('Just some words'))
-    const slot = result.sections[0].lines[0].slots[0]
-    expect(slot.chord).toBeUndefined()
-    expect(slot.occurrenceIdx).toBeUndefined()
-    expect(slot.text).toBe('Just some words')
+  it('maps a lyric-only line to a single segment with no chord or occurrenceIdx', () => {
+    // Given
+    const source = VERSE('Just some words')
+
+    // When
+    const result = compile(source)
+
+    // Then
+    const seg = getLine(result, 0, 0).segments[0]
+    expect(seg.chord).toBeUndefined()
+    expect(seg.occurrenceIdx).toBeUndefined()
+    expect(seg.text).toBe('Just some words')
   })
 
-  it('produces a chord-only slot when the chord has no following text', () => {
-    const result = compile(VERSE('[Am]words [C]'))
-    const slots = result.sections[0].lines[0].slots
-    const lastSlot = slots[slots.length - 1]
-    expect(lastSlot.chord).toBe('C')
-    expect(lastSlot.occurrenceIdx).toBe(1)
+  it('produces a chord-only segment when the chord has no following text', () => {
+    // Given
+    const source = VERSE('[Am]words [C]')
+
+    // When
+    const result = compile(source)
+
+    // Then
+    const segments = getLine(result, 0, 0).segments
+    const lastSeg = segments[segments.length - 1]
+    expect(lastSeg.chord).toBe('C')
+    expect(lastSeg.occurrenceIdx).toBe(1)
   })
 })
 
@@ -45,17 +83,35 @@ describe('compile — chord-lyric slot mapping', () => {
 
 describe('compile — anchorWord extraction', () => {
   it('extracts the first word of the lyrics as anchorWord', () => {
-    const result = compile(VERSE('[Am]Look at this'))
+    // Given
+    const source = VERSE('[Am]Look at this')
+
+    // When
+    const result = compile(source)
+
+    // Then
     expect(result.occurrences[0].anchorWord).toBe('Look')
   })
 
   it('returns undefined for anchorWord when the chord has no following text', () => {
-    const result = compile(VERSE('[Am]'))
+    // Given
+    const source = VERSE('[Am]')
+
+    // When
+    const result = compile(source)
+
+    // Then
     expect(result.occurrences[0].anchorWord).toBeUndefined()
   })
 
   it('returns undefined for anchorWord when lyrics are whitespace only', () => {
-    const result = compile(VERSE('[Am]   [C]next'))
+    // Given
+    const source = VERSE('[Am]   [C]next')
+
+    // When
+    const result = compile(source)
+
+    // Then
     expect(result.occurrences[0].anchorWord).toBeUndefined()
     expect(result.occurrences[1].anchorWord).toBe('next')
   })
@@ -67,37 +123,47 @@ describe('compile — anchorWord extraction', () => {
 
 describe('compile — section labels', () => {
   it('attaches the section label to the section, not repeated on each line', () => {
+    // Given
     const source = `{start_of_verse: Verse 1}
 [Am]hello [C]world
 [G]more words
 {end_of_verse}`
+
+    // When
     const result = compile(source)
-    expect(result.sections[0].label).toBe('Verse 1')
-    expect(result.sections[0].lines).toHaveLength(2)
+
+    // Then
+    const section = getSection(result, 0)
+    expect(section.label).toBe('Verse 1')
+    expect(section.body).toHaveLength(2)
   })
 
-  it('skips indeterminate paragraphs — lines with no section directive produce no section', () => {
-    const source = `[Am]no section yet
+  it('capitalises the section type when no explicit label is given, and no bare chord line is emitted for a proper section', () => {
+    // Given
+    const source = CHORUS('[G]sing it')
 
-{start_of_chorus}
-[G]chorus line
-{end_of_chorus}`
+    // When
     const result = compile(source)
-    // The [Am] line is indeterminate → skipped; only the chorus produces a section
-    expect(result.sections).toHaveLength(1)
-    expect(result.sections[0].label).toBe('Chorus')
+
+    // Then
+    expect(getSection(result, 0).label).toBe('Chorus')
   })
 
   it('uses different section labels for different paragraphs', () => {
+    // Given
     const source = `{start_of_verse: Verse 1}
 [Am]verse line
 {end_of_verse}
 {start_of_chorus}
 [G]chorus line
 {end_of_chorus}`
+
+    // When
     const result = compile(source)
-    expect(result.sections[0].label).toBe('Verse 1')
-    expect(result.sections[1].label).toBe('Chorus')
+
+    // Then
+    expect(getSection(result, 0).label).toBe('Verse 1')
+    expect(getSection(result, 1).label).toBe('Chorus')
   })
 })
 
@@ -107,59 +173,92 @@ describe('compile — section labels', () => {
 
 describe('compile — metadata extraction', () => {
   it('extracts title and artist from directives', () => {
+    // Given
     const source = `{title: Photograph}
 {artist: Nickelback}
 ${VERSE('[Am]hello')}`
+
+    // When
     const result = compile(source)
+
+    // Then
     expect(result.metadata.title).toBe('Photograph')
     expect(result.metadata.artist).toBe('Nickelback')
   })
 
   it('extracts key and capo', () => {
+    // Given
     const source = `{key: Am}
 {capo: 2}
 ${VERSE('[Am]hello')}`
+
+    // When
     const result = compile(source)
+
+    // Then
     expect(result.metadata.key).toBe('Am')
     expect(result.metadata.capo).toBe('2')
   })
 
   it('leaves metadata fields undefined when directives are absent', () => {
-    const result = compile(VERSE('[Am]hello'))
+    // Given
+    const source = VERSE('[Am]hello')
+
+    // When
+    const result = compile(source)
+
+    // Then
     expect(result.metadata.title).toBeUndefined()
     expect(result.metadata.artist).toBeUndefined()
   })
 })
 
 // ---------------------------------------------------------------------------
-// 3.5 occurrences[] contiguous, zero-based, covers all chord slots
+// 3.5 occurrences[] contiguous, zero-based, covers all chord segments
 // ---------------------------------------------------------------------------
 
 describe('compile — occurrences[] index', () => {
   it('is contiguous and zero-based', () => {
+    // Given
     const source = VERSE('[Am]hello [C]world\n[G]more')
+
+    // When
     const result = compile(source)
+
+    // Then
     result.occurrences.forEach((occ, i) => {
       expect(occ.occurrenceIdx).toBe(i)
     })
   })
 
-  it('covers every chord-bearing slot and matches its sectionIdx/lineIdx/slotIdx', () => {
+  it('covers every chord-bearing segment and matches its path/segmentIdx', () => {
+    // Given
     const source = VERSE('[Am]hello [C]world\n[G]more')
+
+    // When
     const result = compile(source)
 
+    // Then
     for (const occ of result.occurrences) {
-      const slot = result.sections[occ.sectionIdx].lines[occ.lineIdx].slots[occ.slotIdx]
-      expect(slot.chord).toBe(occ.chord)
-      expect(slot.occurrenceIdx).toBe(occ.occurrenceIdx)
+      const section = result.body.body[occ.path[0]] as Section
+      const line = section.body[occ.path[1]] as Line
+      const seg = line.segments[occ.segmentIdx]
+      expect(seg.chord).toBe(occ.chord)
+      expect(seg.occurrenceIdx).toBe(occ.occurrenceIdx)
     }
   })
 
-  it('lyric-only slots have no occurrenceIdx', () => {
-    const result = compile(VERSE('words [Am]chords'))
-    const slots = result.sections[0].lines[0].slots
-    const lyricSlot = slots.find((s) => !s.chord)
-    expect(lyricSlot?.occurrenceIdx).toBeUndefined()
+  it('lyric-only segments have no occurrenceIdx', () => {
+    // Given
+    const source = VERSE('words [Am]chords')
+
+    // When
+    const result = compile(source)
+
+    // Then
+    const segments = getLine(result, 0, 0).segments
+    const lyricSeg = segments.find((s) => !s.chord)
+    expect(lyricSeg?.occurrenceIdx).toBeUndefined()
   })
 })
 
@@ -169,6 +268,7 @@ describe('compile — occurrences[] index', () => {
 
 describe('compile — end-to-end multi-section', () => {
   it('compiles a two-section song to the correct TranscriptionBundle shape', () => {
+    // Given
     const source = `{title: Test Song}
 {artist: Test Artist}
 {start_of_verse: Verse 1}
@@ -178,24 +278,34 @@ describe('compile — end-to-end multi-section', () => {
 [G]Never [D]made it
 {end_of_chorus}`
 
+    // When
     const result = compile(source)
 
+    // Then
     expect(result.version).toBe(1)
     expect(result.metadata.title).toBe('Test Song')
     expect(result.metadata.artist).toBe('Test Artist')
 
-    expect(result.sections).toHaveLength(2)
-    expect(result.sections[0].label).toBe('Verse 1')
-    expect(result.sections[1].label).toBe('Chorus')
+    // Two named sections at the root body level
+    const verseSection = getSection(result, 0)
+    const chorusSection = getSection(result, 1)
+    expect(verseSection.label).toBe('Verse 1')
+    expect(chorusSection.label).toBe('Chorus')
 
     expect(result.occurrences).toHaveLength(4)
     expect(result.occurrences.map((o) => o.chord)).toEqual(['Am', 'C', 'G', 'D'])
     expect(result.occurrences.map((o) => o.occurrenceIdx)).toEqual([0, 1, 2, 3])
-    expect(result.occurrences.map((o) => o.sectionIdx)).toEqual([0, 0, 1, 1])
-    expect(result.occurrences.map((o) => o.lineIdx)).toEqual([0, 0, 0, 0])
+    // path[0] is the sectionRootIdx in body.body; verse is at 0, chorus at 1
+    expect(result.occurrences.map((o) => o.path[0])).toEqual([0, 0, 1, 1])
+    // path[1] is the lineIdx within the section; all on the first line
+    expect(result.occurrences.map((o) => o.path[1])).toEqual([0, 0, 0, 0])
 
+    // Each occurrence resolves back to its segment
     for (const occ of result.occurrences) {
-      expect(result.sections[occ.sectionIdx].lines[occ.lineIdx].slots[occ.slotIdx].chord).toBe(occ.chord)
+      const section = result.body.body[occ.path[0]] as Section
+      const line = section.body[occ.path[1]] as Line
+      const seg = line.segments[occ.segmentIdx]
+      expect(seg.chord).toBe(occ.chord)
     }
   })
 })
@@ -206,41 +316,81 @@ describe('compile — end-to-end multi-section', () => {
 
 describe('compile — anchorWord edge cases', () => {
   it('returns undefined for anchorWord when lyrics are an empty string', () => {
-    const result = compile(VERSE('[Am][C]word'))
+    // Given
+    const source = VERSE('[Am][C]word')
+
+    // When
+    const result = compile(source)
+
+    // Then
     expect(result.occurrences[0].anchorWord).toBeUndefined()
   })
 
   it('returns undefined for anchorWord when lyrics consist entirely of punctuation', () => {
-    const result = compile(VERSE('[Am]... [C]word'))
+    // Given
+    const source = VERSE('[Am]... [C]word')
+
+    // When
+    const result = compile(source)
+
+    // Then
     expect(result.occurrences[0].anchorWord).toBeUndefined()
     expect(result.occurrences[1].anchorWord).toBe('word')
   })
 })
 
 // ---------------------------------------------------------------------------
-// 3.8 Indeterminate paragraph skipping
+// 3.8 Inline paragraph handling (bare chord lines outside sections)
 // ---------------------------------------------------------------------------
 
-describe('compile — indeterminate paragraph skipping', () => {
-  it('produces no sections for a bare chord line with no section directive', () => {
-    const result = compile('[Am]bare line')
-    expect(result.sections).toHaveLength(0)
-    expect(result.occurrences).toHaveLength(0)
+describe('compile — inline paragraph handling', () => {
+  it('emits a top-level Line block for a bare chord line with no section directive', () => {
+    // Given
+    // A chord-bearing 'indeterminate' paragraph is now emitted as a top-level
+    // Line block into body.body[] rather than being skipped.
+    const source = '[Am]bare line'
+
+    // When
+    const result = compile(source)
+
+    // Then
+    expect(result.body.body).toHaveLength(1)
+    expect(result.body.body[0].kind).toBe('line')
+    expect(result.occurrences).toHaveLength(1)
+    expect(result.occurrences[0].chord).toBe('Am')
   })
 
-  it('capitalises the section type when no explicit label is given', () => {
-    const result = compile(CHORUS('[G]sing it'))
-    expect(result.sections[0].label).toBe('Chorus')
+  it('skips a text-only indeterminate line that has no chord or annotation', () => {
+    // Given
+    // A preamble comment with no chords — should not produce any block.
+    const source = `just some preamble text
+
+${VERSE('[Am]real content')}`
+
+    // When
+    const result = compile(source)
+
+    // Then
+    // Only the verse section block is in body.body; the preamble is dropped.
+    expect(result.body.body).toHaveLength(1)
+    expect(result.body.body[0].kind).toBe('section')
+    expect(result.occurrences).toHaveLength(1)
   })
 
-  it('skips tab paragraphs', () => {
+  it('skips tab paragraphs entirely', () => {
+    // Given
     const source = `{start_of_tab}
 E|--0--2--|
 {end_of_tab}
 ${VERSE('[Am]real content')}`
+
+    // When
     const result = compile(source)
-    expect(result.sections).toHaveLength(1)
-    expect(result.sections[0].label).toBe('Verse')
+
+    // Then
+    expect(result.body.body).toHaveLength(1)
+    expect(result.body.body[0].kind).toBe('section')
+    expect(getSection(result, 0).label).toBe('Verse')
   })
 })
 
@@ -250,16 +400,27 @@ ${VERSE('[Am]real content')}`
 
 describe('compile — sourceDescriptor', () => {
   it('uses the default youtube sourceDescriptor when none is provided', () => {
-    const result = compile(VERSE('[Am]hello'))
-    const source = result.source as YoutubeSource
-    expect(source.kind).toBe('youtube')
-    expect(source.videoId).toBe('')
-    expect(source.offsetSec).toBe(0)
+    // Given
+    const source = VERSE('[Am]hello')
+
+    // When
+    const result = compile(source)
+
+    // Then
+    const src = result.source as YoutubeSource
+    expect(src.kind).toBe('youtube')
+    expect(src.videoId).toBe('')
+    expect(src.offsetSec).toBe(0)
   })
 
   it('embeds a custom sourceDescriptor verbatim in the bundle', () => {
+    // Given
     const descriptor: SpotifySource = { kind: 'spotify', trackId: 'abc123', offsetSec: 5 }
+
+    // When
     const result = compile(VERSE('[Am]hello'), descriptor)
+
+    // Then
     expect(result.source).toEqual(descriptor)
   })
 })
@@ -269,32 +430,47 @@ describe('compile — sourceDescriptor', () => {
 // ---------------------------------------------------------------------------
 
 describe('compile — empty or chord-free source', () => {
-  it('returns empty sections and occurrences for an empty source string', () => {
+  it('returns an empty body and no occurrences for an empty source string', () => {
+    // Given / When
     const result = compile('')
-    expect(result.sections).toHaveLength(0)
+
+    // Then
+    expect(result.body.body).toHaveLength(0)
     expect(result.occurrences).toHaveLength(0)
   })
 
-  it('returns empty sections and occurrences for a source with only directives', () => {
+  it('returns an empty body and no occurrences for a source with only directives', () => {
+    // Given
     const source = `{title: Empty Song}
 {artist: Nobody}`
+
+    // When
     const result = compile(source)
-    expect(result.sections).toHaveLength(0)
+
+    // Then
+    expect(result.body.body).toHaveLength(0)
     expect(result.occurrences).toHaveLength(0)
     expect(result.metadata.title).toBe('Empty Song')
   })
 })
 
 // ---------------------------------------------------------------------------
-// 3.11 Slot text field presence
+// 3.11 Segment text field presence
 // ---------------------------------------------------------------------------
 
-describe('compile — slot text field', () => {
-  it('omits the text field on a chord slot that has no following lyrics', () => {
-    const result = compile(VERSE('[Am]words [C]'))
-    const lastSlot = result.sections[0].lines[0].slots.at(-1)!
-    expect(lastSlot.chord).toBe('C')
-    expect(lastSlot.text === undefined || lastSlot.text === '').toBe(true)
+describe('compile — segment text field', () => {
+  it('omits the text field on a chord segment that has no following lyrics', () => {
+    // Given
+    const source = VERSE('[Am]words [C]')
+
+    // When
+    const result = compile(source)
+
+    // Then
+    const segments = getLine(result, 0, 0).segments
+    const lastSeg = segments[segments.length - 1]!
+    expect(lastSeg.chord).toBe('C')
+    expect(lastSeg.text === undefined || lastSeg.text === '').toBe(true)
   })
 })
 
@@ -303,34 +479,50 @@ describe('compile — slot text field', () => {
 // ---------------------------------------------------------------------------
 
 describe('compile — [*CONTENT] annotation handling', () => {
-  it('renders [*|] as a display-only "|" slot — not a chord occurrence', () => {
-    // chordsheetjs crashes on [*CONTENT] alongside real chords. The compiler
-    // pre-extracts annotations and emits them as chord-display slots with no
-    // occurrenceIdx so they are never highlighted and need no timestamp.
+  it('renders [*|] as a display-only annotation segment — not a chord occurrence', () => {
+    // Given
+    // The compiler pre-extracts [*CONTENT] annotations and emits them as Segments
+    // with an `annotation` field (not `chord`). They have no occurrenceIdx.
     const source = VERSE('[Am]one [*|] [C]two')
+
+    // When
     const result = compile(source)
-    // Only the real chords are occurrences
+
+    // Then — only real chords are occurrences
     expect(result.occurrences.map((o) => o.chord)).toEqual(['Am', 'C'])
-    // The "|" annotation slot is present but has no occurrenceIdx
-    const slots = result.sections[0].lines[0].slots
-    const barSlot = slots.find((s) => s.chord === '|')
-    expect(barSlot).toBeDefined()
-    expect(barSlot?.occurrenceIdx).toBeUndefined()
+
+    // The "|" annotation segment is present with annotation field (not chord)
+    const segments = getLine(result, 0, 0).segments
+    const barSeg = segments.find((s) => s.annotation === '|')
+    expect(barSeg).toBeDefined()
+    expect(barSeg?.chord).toBeUndefined()
+    expect(barSeg?.occurrenceIdx).toBeUndefined()
   })
 
-  it('renders [*Coda] as a display-only "Coda" annotation slot', () => {
+  it('renders [*Coda] as a display-only "Coda" annotation segment', () => {
+    // Given
     const source = VERSE('[Am]verse [*Coda] [G]end')
+
+    // When
     const result = compile(source)
+
+    // Then
     expect(result.occurrences.map((o) => o.chord)).toEqual(['Am', 'G'])
-    const slots = result.sections[0].lines[0].slots
-    const annotSlot = slots.find((s) => s.chord === 'Coda')
-    expect(annotSlot).toBeDefined()
-    expect(annotSlot?.occurrenceIdx).toBeUndefined()
+    const segments = getLine(result, 0, 0).segments
+    const annotSeg = segments.find((s) => s.annotation === 'Coda')
+    expect(annotSeg).toBeDefined()
+    expect(annotSeg?.chord).toBeUndefined()
+    expect(annotSeg?.occurrenceIdx).toBeUndefined()
   })
 
   it('occurrence indices are contiguous even when annotations are interleaved', () => {
+    // Given
     const source = VERSE('[G]a [*|] [D]b [*|] [Em]c [*|] [C]d')
+
+    // When
     const result = compile(source)
+
+    // Then
     expect(result.occurrences.map((o) => o.chord)).toEqual(['G', 'D', 'Em', 'C'])
     expect(result.occurrences.map((o) => o.occurrenceIdx)).toEqual([0, 1, 2, 3])
   })
@@ -345,31 +537,30 @@ describe('compile — normalizeSource: space-only line normalization', () => {
     // Given
     // A space-only line immediately before {start_of_verse}. Without normalization
     // chordsheetjs merges the directive into the preceding paragraph and emits
-    // type 'indeterminate' instead of 'verse', causing the section to be skipped.
+    // type 'indeterminate' instead of the correct named type.
     const source = `   \n{start_of_verse}\n[Am]hello\n{end_of_verse}`
 
     // When
     const result = compile(source)
 
-    // Then
-    // The verse section must survive — if normalization were absent it would be skipped.
-    expect(result.sections).toHaveLength(1)
-    expect(result.sections[0].label).toBe('Verse')
+    // Then — the verse section must survive
+    expect(result.body.body).toHaveLength(1)
+    expect(result.body.body[0].kind).toBe('section')
+    expect(getSection(result, 0).label).toBe('Verse')
     expect(result.occurrences).toHaveLength(1)
     expect(result.occurrences[0].chord).toBe('Am')
   })
 
   it('normalizes a line consisting entirely of tabs to a blank separator', () => {
     // Given
-    // Tabs-only line before a chorus directive.
     const source = `\t\t\n{start_of_chorus}\n[G]chorus\n{end_of_chorus}`
 
     // When
     const result = compile(source)
 
     // Then
-    expect(result.sections).toHaveLength(1)
-    expect(result.sections[0].label).toBe('Chorus')
+    expect(result.body.body).toHaveLength(1)
+    expect(getSection(result, 0).label).toBe('Chorus')
   })
 
   it('normalizes mixed spaces and tabs on a line to a blank separator', () => {
@@ -380,20 +571,21 @@ describe('compile — normalizeSource: space-only line normalization', () => {
     const result = compile(source)
 
     // Then
-    expect(result.sections).toHaveLength(1)
-    expect(result.sections[0].label).toBe('Verse')
+    expect(result.body.body).toHaveLength(1)
+    expect(getSection(result, 0).label).toBe('Verse')
   })
 })
 
 // ---------------------------------------------------------------------------
-// 3.14 SKIP_PARAGRAPH_TYPES — 'none' type
+// 3.14 Inline paragraph emission — 'none' and 'indeterminate' types
 // ---------------------------------------------------------------------------
 
-describe('compile — SKIP_PARAGRAPH_TYPES: none type', () => {
-  it('skips a "none"-typed paragraph produced by orphaned content after a section end', () => {
+describe('compile — inline paragraph emission: none and indeterminate types', () => {
+  it('emits a top-level Line block for a "none"-typed orphan chord line after a section end', () => {
     // Given
     // A bare chord line after {end_of_verse} with no new section tag.
-    // chordsheetjs emits this as type "none".
+    // chordsheetjs emits this as type "none". The compiler now includes these
+    // as top-level Line blocks (unlike before when they were skipped).
     const source = `{start_of_verse}
 [Am]verse line
 {end_of_verse}
@@ -402,18 +594,15 @@ describe('compile — SKIP_PARAGRAPH_TYPES: none type', () => {
     // When
     const result = compile(source)
 
-    // Then
-    // Only the verse section survives; the orphaned line is skipped.
-    expect(result.sections).toHaveLength(1)
-    expect(result.sections[0].label).toBe('Verse')
-    expect(result.occurrences.map((o) => o.chord)).toEqual(['Am'])
+    // Then — both the verse section and the orphan line are in body.body
+    expect(result.body.body).toHaveLength(2)
+    expect(result.body.body[0].kind).toBe('section')
+    expect(result.body.body[1].kind).toBe('line')
+    expect(result.occurrences.map((o) => o.chord)).toEqual(['Am', 'G'])
   })
 
-  it('skips a "none"-typed paragraph and leaves occurrenceIdx contiguous', () => {
+  it('assigns correct occurrence paths for inline lines mixed with sections', () => {
     // Given
-    // Verse section followed by orphaned content (blank-line-separated), followed by chorus.
-    // chordsheetjs requires a blank line between the orphaned line and the next section
-    // tag; without it the two are merged into a single indeterminate paragraph.
     const source = `{start_of_verse}
 [Am]verse
 {end_of_verse}
@@ -427,13 +616,21 @@ describe('compile — SKIP_PARAGRAPH_TYPES: none type', () => {
     const result = compile(source)
 
     // Then
-    expect(result.sections).toHaveLength(2)
-    // Occurrences should be Am (idx 0) and D (idx 1); G is skipped.
-    expect(result.occurrences).toHaveLength(2)
+    // body.body: [section(verse), line(orphan), section(chorus)]
+    expect(result.body.body).toHaveLength(3)
+    expect(result.body.body[0].kind).toBe('section')
+    expect(result.body.body[1].kind).toBe('line')
+    expect(result.body.body[2].kind).toBe('section')
+
+    expect(result.occurrences).toHaveLength(3)
     expect(result.occurrences[0].chord).toBe('Am')
     expect(result.occurrences[0].occurrenceIdx).toBe(0)
-    expect(result.occurrences[1].chord).toBe('D')
+    expect(result.occurrences[1].chord).toBe('G')
     expect(result.occurrences[1].occurrenceIdx).toBe(1)
+    // G is a top-level line at body.body[1], so path has length 1
+    expect(result.occurrences[1].path).toEqual([1])
+    expect(result.occurrences[2].chord).toBe('D')
+    expect(result.occurrences[2].occurrenceIdx).toBe(2)
   })
 })
 
@@ -446,7 +643,7 @@ describe('compile — blank line inside a named section', () => {
     // Given
     // chordsheetjs treats a blank line inside {start_of_bridge}...{end_of_bridge}
     // as a paragraph break, emitting two paragraphs of type "bridge".
-    // Both should appear as separate Section objects in the bundle.
+    // Both should appear as separate Section objects in body.body.
     const source = `{start_of_bridge}
 [Am]first part
 
@@ -457,14 +654,14 @@ describe('compile — blank line inside a named section', () => {
     const result = compile(source)
 
     // Then
-    expect(result.sections).toHaveLength(2)
-    expect(result.sections[0].label).toBe('Bridge')
-    expect(result.sections[1].label).toBe('Bridge')
-    expect(result.sections[0].lines).toHaveLength(1)
-    expect(result.sections[1].lines).toHaveLength(1)
+    expect(result.body.body).toHaveLength(2)
+    expect(getSection(result, 0).label).toBe('Bridge')
+    expect(getSection(result, 1).label).toBe('Bridge')
+    expect(getSection(result, 0).body).toHaveLength(1)
+    expect(getSection(result, 1).body).toHaveLength(1)
   })
 
-  it('assigns correct sectionIdx values when a blank line splits a section', () => {
+  it('assigns correct path[0] values when a blank line splits a section', () => {
     // Given
     const source = `{start_of_bridge}
 [Am]part one
@@ -475,15 +672,15 @@ describe('compile — blank line inside a named section', () => {
     // When
     const result = compile(source)
 
-    // Then
+    // Then — two sections at indices 0 and 1
     expect(result.occurrences).toHaveLength(2)
     expect(result.occurrences[0].chord).toBe('Am')
-    expect(result.occurrences[0].sectionIdx).toBe(0)
+    expect(result.occurrences[0].path[0]).toBe(0)
     expect(result.occurrences[1].chord).toBe('C')
-    expect(result.occurrences[1].sectionIdx).toBe(1)
+    expect(result.occurrences[1].path[0]).toBe(1)
   })
 
-  it('assigns lineIdx 0 for the first line of each split section', () => {
+  it('assigns path[1] = 0 for the first line of each split section', () => {
     // Given
     const source = `{start_of_verse}
 [Am]a
@@ -494,22 +691,21 @@ describe('compile — blank line inside a named section', () => {
     // When
     const result = compile(source)
 
-    // Then
-    // Each split section has exactly one line, so lineIdx must be 0 for both.
-    expect(result.occurrences[0].lineIdx).toBe(0)
-    expect(result.occurrences[1].lineIdx).toBe(0)
+    // Then — each split section has exactly one line, so path[1] must be 0 for both
+    expect(result.occurrences[0].path[1]).toBe(0)
+    expect(result.occurrences[1].path[1]).toBe(0)
   })
 })
 
 // ---------------------------------------------------------------------------
-// 3.16 sectionIdx and lineIdx are section-relative across multi-line sections
+// 3.16 path[] is section-relative across multi-line, multi-section songs
 // ---------------------------------------------------------------------------
 
-describe('compile — sectionIdx and lineIdx across multi-line, multi-section songs', () => {
-  it('lineIdx is relative to its own section, not the global line count', () => {
+describe('compile — path[] across multi-line, multi-section songs', () => {
+  it('path[1] is section-relative, not the global line count', () => {
     // Given
     // Verse with two chord lines, then a chorus with two chord lines.
-    // Occurrences in the chorus must have lineIdx 0 and 1 (section-relative),
+    // Occurrences in the chorus must have path[1] of 0 and 1 (section-relative),
     // not 2 and 3 (global).
     const source = `{start_of_verse}
 [Am]verse line 1
@@ -525,12 +721,11 @@ describe('compile — sectionIdx and lineIdx across multi-line, multi-section so
 
     // Then
     expect(result.occurrences).toHaveLength(4)
-    // Am and C are in section 0
-    expect(result.occurrences[0]).toMatchObject({ chord: 'Am', sectionIdx: 0, lineIdx: 0 })
-    expect(result.occurrences[1]).toMatchObject({ chord: 'C', sectionIdx: 0, lineIdx: 1 })
-    // G and D are in section 1, lineIdx resets to 0
-    expect(result.occurrences[2]).toMatchObject({ chord: 'G', sectionIdx: 1, lineIdx: 0 })
-    expect(result.occurrences[3]).toMatchObject({ chord: 'D', sectionIdx: 1, lineIdx: 1 })
+    expect(result.occurrences[0]).toMatchObject({ chord: 'Am', path: [0, 0] })
+    expect(result.occurrences[1]).toMatchObject({ chord: 'C', path: [0, 1] })
+    // Chorus is at root body index 1; path[1] resets to 0
+    expect(result.occurrences[2]).toMatchObject({ chord: 'G', path: [1, 0] })
+    expect(result.occurrences[3]).toMatchObject({ chord: 'D', path: [1, 1] })
   })
 
   it('occurrenceIdx is global and monotonically increasing across sections', () => {
@@ -551,7 +746,7 @@ describe('compile — sectionIdx and lineIdx across multi-line, multi-section so
     expect(result.occurrences.map((o) => o.occurrenceIdx)).toEqual([0, 1, 2, 3])
   })
 
-  it('each occurrence resolves back to the correct slot via its section/line/slot indices', () => {
+  it('each occurrence resolves back to the correct segment via its path and segmentIdx', () => {
     // Given
     // Multi-line verse and chorus with multiple chords per line.
     const source = `{start_of_verse}
@@ -567,9 +762,105 @@ describe('compile — sectionIdx and lineIdx across multi-line, multi-section so
 
     // Then
     for (const occ of result.occurrences) {
-      const slot = result.sections[occ.sectionIdx].lines[occ.lineIdx].slots[occ.slotIdx]
-      expect(slot.chord).toBe(occ.chord)
-      expect(slot.occurrenceIdx).toBe(occ.occurrenceIdx)
+      const section = result.body.body[occ.path[0]] as Section
+      const line = section.body[occ.path[1]] as Line
+      const seg = line.segments[occ.segmentIdx]
+      expect(seg.chord).toBe(occ.chord)
+      expect(seg.occurrenceIdx).toBe(occ.occurrenceIdx)
     }
+  })
+})
+
+// ---------------------------------------------------------------------------
+// 5.2 Inter-section chord line becomes a top-level Line block
+// ---------------------------------------------------------------------------
+
+describe('compile — inter-section chord line becomes top-level block', () => {
+  it('emits a top-level Line block for a chord line between two named sections', () => {
+    // Given
+    // A chord line sits between a verse and a chorus with no section wrapper.
+    // It is an inline paragraph and should appear as a top-level Line in body.body.
+    // A blank line before {start_of_chorus} is required so that chordsheetjs
+    // recognises the chorus as a new paragraph rather than merging the orphan
+    // line and the directive into a single indeterminate paragraph.
+    const source = `{start_of_verse}
+[Am]verse content
+{end_of_verse}
+[G]bridge chord line
+
+{start_of_chorus}
+[D]chorus content
+{end_of_chorus}`
+
+    // When
+    const result = compile(source)
+
+    // Then
+    // body.body layout: [section(verse), line(G), section(chorus)]
+    expect(result.body.body).toHaveLength(3)
+    expect(result.body.body[0].kind).toBe('section')
+    expect(result.body.body[1].kind).toBe('line')
+    expect(result.body.body[2].kind).toBe('section')
+
+    // The top-level Line contains the G chord
+    const topLine = getTopLevelLine(result, 1)
+    expect(topLine.segments.some((s) => s.chord === 'G')).toBe(true)
+
+    // The G occurrence has a path of length 1 pointing to body.body[1]
+    const gOcc = result.occurrences.find((o) => o.chord === 'G')!
+    expect(gOcc.path).toHaveLength(1)
+    expect(gOcc.path[0]).toBe(1)
+  })
+})
+
+// ---------------------------------------------------------------------------
+// 5.3 [*|] produces annotation segment
+// ---------------------------------------------------------------------------
+
+describe('compile — [*|] produces annotation segment', () => {
+  it('emits a segment with annotation field and no chord or occurrenceIdx for [*|]', () => {
+    // Given
+    const source = VERSE('[Am]one [*|] [C]two')
+
+    // When
+    const result = compile(source)
+
+    // Then — only Am and C appear as chord occurrences
+    expect(result.occurrences.map((o) => o.chord)).toEqual(['Am', 'C'])
+
+    const segments = getLine(result, 0, 0).segments
+    const annotSeg = segments.find((s) => s.annotation === '|')
+
+    // The annotation segment exists
+    expect(annotSeg).toBeDefined()
+    // It has no chord field
+    expect(annotSeg?.chord).toBeUndefined()
+    // It has no occurrenceIdx
+    expect(annotSeg?.occurrenceIdx).toBeUndefined()
+  })
+})
+
+// ---------------------------------------------------------------------------
+// 5.4 Bare [*] produces no segment
+// ---------------------------------------------------------------------------
+
+describe('compile — bare [*] produces no segment', () => {
+  it('emits no segment for a bare [*] annotation with empty content', () => {
+    // Given
+    const source = VERSE('[Am]one [*] [C]two')
+
+    // When
+    const result = compile(source)
+
+    // Then
+    const segments = getLine(result, 0, 0).segments
+
+    // Only two chord segments: Am and C
+    expect(segments).toHaveLength(2)
+    // No segment with annotation or chord matching the bare asterisk
+    expect(segments.every((s) => s.annotation !== '' && s.annotation !== undefined || s.chord !== undefined || s.text !== undefined)).toBe(true)
+    // Specifically: only Am and C chords
+    const chordSegs = segments.filter((s) => s.chord !== undefined)
+    expect(chordSegs.map((s) => s.chord)).toEqual(['Am', 'C'])
   })
 })

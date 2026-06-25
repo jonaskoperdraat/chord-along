@@ -1,4 +1,4 @@
-## Requirements
+## MODIFIED Requirements
 
 ### Requirement: Parse chord-lyric lines
 The parser SHALL recognise lines containing ChordPro chord annotations in the
@@ -81,37 +81,3 @@ group subsequent lines as `Line` blocks inside a `Section` block in `body[]`.
 #### Scenario: Lines before any directive appear as top-level lines
 - **WHEN** chord-lyric lines appear before any section directive
 - **THEN** those lines appear as top-level `Line` blocks at the start of `body[]`
-
-### Requirement: Metadata directives
-The parser SHALL recognise standard ChordPro metadata directives — `{title:}`,
-`{artist:}`, `{key:}`, `{capo:}` — and return them as a structured metadata map
-on the parse output. Unknown directives SHALL be silently ignored.
-
-#### Scenario: Title and artist are extracted
-- **WHEN** the source contains `{title: Photograph}` and `{artist: Nickelback}`
-- **THEN** the parse output's metadata map contains `{ title: "Photograph", artist: "Nickelback" }`
-
-#### Scenario: Unknown directives do not cause errors
-- **WHEN** the source contains a directive not in the recognised set
-- **THEN** the parser ignores it and continues without throwing
-
-### Requirement: Blank lines and comments
-The parser SHALL skip blank lines and ChordPro comment lines (lines starting with
-`#`). They SHALL produce no segments and no directives in the output.
-
-#### Scenario: Blank lines are skipped
-- **WHEN** the source contains consecutive blank lines between sections
-- **THEN** the parse output contains no empty segment lists corresponding to those lines
-
-#### Scenario: Comment lines are skipped
-- **WHEN** a line begins with `#`
-- **THEN** that line is not reflected in the parse output
-
-### Requirement: v1 scope — inline only
-The parser SHALL NOT attempt to expand section references (`{chorus}` as a
-playback reference) or repeat markers (`x4`). These constructs SHALL be treated
-as section directives (labels only) in v1. Unrolling is deferred to v2.
-
-#### Scenario: Repeat marker is not expanded
-- **WHEN** the source contains a `{chorus}` reference with no inline content
-- **THEN** the parser treats it as a section boundary, not a content insertion point

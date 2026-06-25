@@ -9,1234 +9,1543 @@
     "title": "Photograph",
     "artist": "Nickelback"
   },
-  "sections": [
-    {
-      "lines": [
-        {
-          "slots": [
-            {
-              "chord": "E",
-              "occurrenceIdx": 0,
-              "text": "Look at this Photo"
-            },
-            {
-              "chord": "B",
-              "occurrenceIdx": 1,
-              "text": "graph, everytime I do it makes me l"
-            },
-            {
-              "chord": "D",
-              "occurrenceIdx": 2,
-              "text": "augh,"
-            }
-          ]
-        },
-        {
-          "slots": [
-            {
-              "text": "How did our eyes get so "
-            },
-            {
-              "chord": "A",
-              "occurrenceIdx": 3,
-              "text": "red, and what the hell is on Joey's "
-            },
-            {
-              "chord": "E",
-              "occurrenceIdx": 4,
-              "text": "head?"
-            }
-          ]
-        },
-        {
-          "slots": [
-            {
-              "text": "And this is where I grew "
-            },
-            {
-              "chord": "B",
-              "occurrenceIdx": 5,
-              "text": "up, I think the present owner fixed it"
-            },
-            {
-              "chord": "D",
-              "occurrenceIdx": 6,
-              "text": " up,"
-            }
-          ]
-        },
-        {
-          "slots": [
-            {
-              "text": "I never knew we ever went wit"
-            },
-            {
-              "chord": "A",
-              "occurrenceIdx": 7,
-              "text": "hout,the second floor is high for sneakin' "
-            },
-            {
-              "chord": "E",
-              "occurrenceIdx": 8,
-              "text": "out."
-            }
-          ]
-        },
-        {
-          "slots": [
-            {
-              "text": "And this is where I went to s"
-            },
-            {
-              "chord": "B",
-              "occurrenceIdx": 9,
-              "text": "chool, most of the time had better things to "
-            },
-            {
-              "chord": "D",
-              "occurrenceIdx": 10,
-              "text": "do,"
-            }
-          ]
-        },
-        {
-          "slots": [
-            {
-              "text": "Criminal record says I broke in "
-            },
-            {
-              "chord": "A",
-              "occurrenceIdx": 11,
-              "text": "twice, I must have done half a dozen "
-            },
-            {
-              "chord": "E",
-              "occurrenceIdx": 12,
-              "text": "times."
-            }
-          ]
-        },
-        {
-          "slots": [
-            {
-              "text": "I wonder if it's too l"
-            },
-            {
-              "chord": "B",
-              "occurrenceIdx": 13,
-              "text": "ate, should I go back and try to gra"
-            },
-            {
-              "chord": "D",
-              "occurrenceIdx": 14,
-              "text": "duate,"
-            }
-          ]
-        },
-        {
-          "slots": [
-            {
-              "text": "Life's better now than it was back "
-            },
-            {
-              "chord": "A",
-              "occurrenceIdx": 15,
-              "text": "then, if I was them I wouldn't let me"
-            }
-          ]
-        },
-        {
-          "slots": [
-            {
-              "chord": "G",
-              "occurrenceIdx": 16,
-              "text": "in...Oh Oh "
-            },
-            {
-              "chord": "A",
-              "occurrenceIdx": 17,
-              "text": "Oh... Oh God I!"
-            }
-          ]
-        }
-      ],
-      "label": "Verse 1"
-    },
-    {
-      "lines": [
-        {
-          "slots": [
-            {
-              "text": "Every"
-            },
-            {
-              "chord": "E",
-              "occurrenceIdx": 18,
-              "text": " memory of lookin out the back door, I had the"
-            },
-            {
-              "chord": "B",
-              "occurrenceIdx": 19,
-              "text": " photo album spread"
-            }
-          ]
-        },
-        {
-          "slots": [
-            {
-              "text": "out on my bedroom floor, It's "
-            },
-            {
-              "chord": "D",
-              "occurrenceIdx": 20,
-              "text": "hard to say it, time to say it"
-            }
-          ]
-        },
-        {
-          "slots": [
-            {
-              "chord": "A",
-              "occurrenceIdx": 21,
-              "text": "Good-bye, Good-bye."
-            }
-          ]
-        },
-        {
-          "slots": [
-            {
-              "text": "Every "
-            },
-            {
-              "chord": "E",
-              "occurrenceIdx": 22,
-              "text": "memory of walkin out the front door, I found the "
-            },
-            {
-              "chord": "B",
-              "occurrenceIdx": 23,
-              "text": "photo of the friend"
-            }
-          ]
-        },
-        {
-          "slots": [
-            {
-              "text": "that I was looking for, It's "
-            },
-            {
-              "chord": "D",
-              "occurrenceIdx": 24,
-              "text": "hard to say it, time to say it"
-            }
-          ]
-        },
-        {
-          "slots": [
-            {
-              "chord": "A",
-              "occurrenceIdx": 25,
-              "text": "Good-Bye, Good-Bye."
-            }
-          ]
-        }
-      ],
-      "label": "Chorus"
-    },
-    {
-      "lines": [
-        {
-          "slots": [
-            {
-              "chord": "E",
-              "occurrenceIdx": 26,
-              "text": "Remember the old arc"
-            },
-            {
-              "chord": "B",
-              "occurrenceIdx": 27,
-              "text": "ade? Blew every dollar that we ever "
-            },
-            {
-              "chord": "D",
-              "occurrenceIdx": 28,
-              "text": "made."
-            }
-          ]
-        },
-        {
-          "slots": [
-            {
-              "text": "The Cops hated us hangin' "
-            },
-            {
-              "chord": "A",
-              "occurrenceIdx": 29,
-              "text": "out, they say somebody went and burned it "
-            },
-            {
-              "chord": "E",
-              "occurrenceIdx": 30,
-              "text": "down."
-            }
-          ]
-        },
-        {
-          "slots": [
-            {
-              "text": "We use to listen to the ra"
-            },
-            {
-              "chord": "B",
-              "occurrenceIdx": 31,
-              "text": "dio and sing along with every song we'd "
-            },
-            {
-              "chord": "D",
-              "occurrenceIdx": 32,
-              "text": "know."
-            }
-          ]
-        },
-        {
-          "slots": [
-            {
-              "text": "We said someday we'd find out how it "
-            },
-            {
-              "chord": "A",
-              "occurrenceIdx": 33,
-              "text": "feels to sing to more than just the"
-            }
-          ]
-        },
-        {
-          "slots": [
-            {
-              "text": "steering "
-            },
-            {
-              "chord": "E",
-              "occurrenceIdx": 34,
-              "text": "wheel. Kim's the first girl I "
-            },
-            {
-              "chord": "B",
-              "occurrenceIdx": 35,
-              "text": "kissed. I was so nervous that I nearly "
-            }
-          ]
-        },
-        {
-          "slots": [
-            {
-              "chord": "D",
-              "occurrenceIdx": 36,
-              "text": "missed."
-            }
-          ]
-        },
-        {
-          "slots": [
-            {
-              "text": "She's had a couple of kids since "
-            },
-            {
-              "chord": "A",
-              "occurrenceIdx": 37,
-              "text": "then. I haven't seen her since god knows"
-            }
-          ]
-        },
-        {
-          "slots": [
-            {
-              "chord": "G",
-              "occurrenceIdx": 38,
-              "text": "when... Oh Oh "
-            },
-            {
-              "chord": "A",
-              "occurrenceIdx": 39,
-              "text": "Oh... Oh God I!"
-            }
-          ]
-        }
-      ],
-      "label": "Verse 2"
-    },
-    {
-      "lines": [
-        {
-          "slots": [
-            {
-              "text": "Every "
-            },
-            {
-              "chord": "E",
-              "occurrenceIdx": 40,
-              "text": "memory of lookin out the back door, I had the "
-            },
-            {
-              "chord": "B",
-              "occurrenceIdx": 41,
-              "text": "photo album spread"
-            }
-          ]
-        },
-        {
-          "slots": [
-            {
-              "text": "out on my bedroom floor, It's "
-            },
-            {
-              "chord": "D",
-              "occurrenceIdx": 42,
-              "text": "hard to say it, time to say it"
-            }
-          ]
-        },
-        {
-          "slots": [
-            {
-              "chord": "A",
-              "occurrenceIdx": 43,
-              "text": "Good-bye, Good-bye."
-            }
-          ]
-        },
-        {
-          "slots": [
-            {
-              "text": "Every "
-            },
-            {
-              "chord": "E",
-              "occurrenceIdx": 44,
-              "text": "memory of walkin out the front door, I found the "
-            },
-            {
-              "chord": "B",
-              "occurrenceIdx": 45,
-              "text": "photo of the friend"
-            }
-          ]
-        },
-        {
-          "slots": [
-            {
-              "text": "that I was looking for, It's "
-            },
-            {
-              "chord": "D",
-              "occurrenceIdx": 46,
-              "text": "hard to say it, time to say it"
-            }
-          ]
-        },
-        {
-          "slots": [
-            {
-              "chord": "A",
-              "occurrenceIdx": 47,
-              "text": "Good-Bye, Good-Bye."
-            }
-          ]
-        }
-      ],
-      "label": "Chorus"
-    },
-    {
-      "lines": [
-        {
-          "slots": [
-            {
-              "chord": "E",
-              "occurrenceIdx": 48,
-              "text": "I miss that tim"
-            },
-            {
-              "chord": "B",
-              "occurrenceIdx": 49,
-              "text": "e, I miss their "
-            },
-            {
-              "chord": "G",
-              "occurrenceIdx": 50,
-              "text": "faces"
-            }
-          ]
-        },
-        {
-          "slots": [
-            {
-              "text": "You can't er"
-            },
-            {
-              "chord": "A",
-              "occurrenceIdx": 51,
-              "text": "ase, You can't repl"
-            },
-            {
-              "chord": "E",
-              "occurrenceIdx": 52,
-              "text": "ace it."
-            }
-          ]
-        },
-        {
-          "slots": [
-            {
-              "text": "I miss it n"
-            },
-            {
-              "chord": "B",
-              "occurrenceIdx": 53,
-              "text": "ow. I can't beli"
-            },
-            {
-              "chord": "G",
-              "occurrenceIdx": 54,
-              "text": "eve it."
-            }
-          ]
-        },
-        {
-          "slots": [
-            {
-              "text": "So hard to s"
-            },
-            {
-              "chord": "A",
-              "occurrenceIdx": 55,
-              "text": "tay. To hard to le"
-            },
-            {
-              "chord": "E",
-              "occurrenceIdx": 56,
-              "text": "ave it."
-            }
-          ]
-        }
-      ],
-      "label": "Bridge"
-    },
-    {
-      "lines": [
-        {
-          "slots": [
-            {
-              "chord": "E",
-              "occurrenceIdx": 57,
-              "text": "If I could relive those "
-            },
-            {
-              "chord": "B",
-              "occurrenceIdx": 58,
-              "text": "days I know the one thing that would never "
-            },
-            {
-              "chord": "D",
-              "occurrenceIdx": 59,
-              "text": "change..."
-            }
-          ]
-        }
-      ],
-      "label": "Bridge"
-    },
-    {
-      "lines": [
-        {
-          "slots": [
-            {
-              "text": "Every "
-            },
-            {
-              "chord": "E",
-              "occurrenceIdx": 60,
-              "text": "memory of lookin out the back door, I had the "
-            },
-            {
-              "chord": "B",
-              "occurrenceIdx": 61,
-              "text": "photo album spread"
-            }
-          ]
-        },
-        {
-          "slots": [
-            {
-              "text": "out on my bedroom floor, It's "
-            },
-            {
-              "chord": "D",
-              "occurrenceIdx": 62,
-              "text": "hard to say it, time to say it"
-            }
-          ]
-        },
-        {
-          "slots": [
-            {
-              "chord": "A",
-              "occurrenceIdx": 63,
-              "text": "Good-bye, Good-bye."
-            }
-          ]
-        },
-        {
-          "slots": [
-            {
-              "text": "Every "
-            },
-            {
-              "chord": "E",
-              "occurrenceIdx": 64,
-              "text": "memory of walkin out the front door, I found the "
-            },
-            {
-              "chord": "B",
-              "occurrenceIdx": 65,
-              "text": "photo of the friend"
-            }
-          ]
-        },
-        {
-          "slots": [
-            {
-              "text": "that I was looking for, It's "
-            },
-            {
-              "chord": "D",
-              "occurrenceIdx": 66,
-              "text": "hard to say it, time to say it"
-            }
-          ]
-        },
-        {
-          "slots": [
-            {
-              "chord": "A",
-              "occurrenceIdx": 67,
-              "text": "Good-Bye, Good-Bye."
-            }
-          ]
-        }
-      ],
-      "label": "Chorus"
-    },
-    {
-      "lines": [
-        {
-          "slots": [
-            {
-              "chord": "E",
-              "occurrenceIdx": 68,
-              "text": "Look at this photo"
-            },
-            {
-              "chord": "B",
-              "occurrenceIdx": 69,
-              "text": "graph...every time I do it makes me "
-            },
-            {
-              "chord": "D",
-              "occurrenceIdx": 70,
-              "text": "laugh."
-            }
-          ]
-        },
-        {
-          "slots": [
-            {
-              "text": "Every time I do it makes "
-            },
-            {
-              "chord": "A",
-              "occurrenceIdx": 71,
-              "text": "me."
-            }
-          ]
-        }
-      ],
-      "label": "Chorus"
-    }
-  ],
+  "body": {
+    "kind": "section",
+    "body": [
+      {
+        "kind": "section",
+        "body": [
+          {
+            "kind": "line",
+            "segments": [
+              {
+                "chord": "E",
+                "occurrenceIdx": 0,
+                "text": "Look at this Photo"
+              },
+              {
+                "chord": "B",
+                "occurrenceIdx": 1,
+                "text": "graph, everytime I do it makes me l"
+              },
+              {
+                "chord": "D",
+                "occurrenceIdx": 2,
+                "text": "augh,"
+              }
+            ]
+          },
+          {
+            "kind": "line",
+            "segments": [
+              {
+                "text": "How did our eyes get so "
+              },
+              {
+                "chord": "A",
+                "occurrenceIdx": 3,
+                "text": "red, and what the hell is on Joey's "
+              },
+              {
+                "chord": "E",
+                "occurrenceIdx": 4,
+                "text": "head?"
+              }
+            ]
+          },
+          {
+            "kind": "line",
+            "segments": [
+              {
+                "text": "And this is where I grew "
+              },
+              {
+                "chord": "B",
+                "occurrenceIdx": 5,
+                "text": "up, I think the present owner fixed it"
+              },
+              {
+                "chord": "D",
+                "occurrenceIdx": 6,
+                "text": " up,"
+              }
+            ]
+          },
+          {
+            "kind": "line",
+            "segments": [
+              {
+                "text": "I never knew we ever went wit"
+              },
+              {
+                "chord": "A",
+                "occurrenceIdx": 7,
+                "text": "hout,the second floor is high for sneakin' "
+              },
+              {
+                "chord": "E",
+                "occurrenceIdx": 8,
+                "text": "out."
+              }
+            ]
+          },
+          {
+            "kind": "line",
+            "segments": [
+              {
+                "text": "And this is where I went to s"
+              },
+              {
+                "chord": "B",
+                "occurrenceIdx": 9,
+                "text": "chool, most of the time had better things to "
+              },
+              {
+                "chord": "D",
+                "occurrenceIdx": 10,
+                "text": "do,"
+              }
+            ]
+          },
+          {
+            "kind": "line",
+            "segments": [
+              {
+                "text": "Criminal record says I broke in "
+              },
+              {
+                "chord": "A",
+                "occurrenceIdx": 11,
+                "text": "twice, I must have done half a dozen "
+              },
+              {
+                "chord": "E",
+                "occurrenceIdx": 12,
+                "text": "times."
+              }
+            ]
+          },
+          {
+            "kind": "line",
+            "segments": [
+              {
+                "text": "I wonder if it's too l"
+              },
+              {
+                "chord": "B",
+                "occurrenceIdx": 13,
+                "text": "ate, should I go back and try to gra"
+              },
+              {
+                "chord": "D",
+                "occurrenceIdx": 14,
+                "text": "duate,"
+              }
+            ]
+          },
+          {
+            "kind": "line",
+            "segments": [
+              {
+                "text": "Life's better now than it was back "
+              },
+              {
+                "chord": "A",
+                "occurrenceIdx": 15,
+                "text": "then, if I was them I wouldn't let me"
+              }
+            ]
+          },
+          {
+            "kind": "line",
+            "segments": [
+              {
+                "chord": "G",
+                "occurrenceIdx": 16,
+                "text": "in...Oh Oh "
+              },
+              {
+                "chord": "A",
+                "occurrenceIdx": 17,
+                "text": "Oh... Oh God I!"
+              }
+            ]
+          }
+        ],
+        "label": "Verse 1",
+        "type": "verse"
+      },
+      {
+        "kind": "section",
+        "body": [
+          {
+            "kind": "line",
+            "segments": [
+              {
+                "text": "Every"
+              },
+              {
+                "chord": "E",
+                "occurrenceIdx": 18,
+                "text": " memory of lookin out the back door, I had the"
+              },
+              {
+                "chord": "B",
+                "occurrenceIdx": 19,
+                "text": " photo album spread"
+              }
+            ]
+          },
+          {
+            "kind": "line",
+            "segments": [
+              {
+                "text": "out on my bedroom floor, It's "
+              },
+              {
+                "chord": "D",
+                "occurrenceIdx": 20,
+                "text": "hard to say it, time to say it"
+              }
+            ]
+          },
+          {
+            "kind": "line",
+            "segments": [
+              {
+                "chord": "A",
+                "occurrenceIdx": 21,
+                "text": "Good-bye, Good-bye."
+              }
+            ]
+          },
+          {
+            "kind": "line",
+            "segments": [
+              {
+                "text": "Every "
+              },
+              {
+                "chord": "E",
+                "occurrenceIdx": 22,
+                "text": "memory of walkin out the front door, I found the "
+              },
+              {
+                "chord": "B",
+                "occurrenceIdx": 23,
+                "text": "photo of the friend"
+              }
+            ]
+          },
+          {
+            "kind": "line",
+            "segments": [
+              {
+                "text": "that I was looking for, It's "
+              },
+              {
+                "chord": "D",
+                "occurrenceIdx": 24,
+                "text": "hard to say it, time to say it"
+              }
+            ]
+          },
+          {
+            "kind": "line",
+            "segments": [
+              {
+                "chord": "A",
+                "occurrenceIdx": 25,
+                "text": "Good-Bye, Good-Bye."
+              }
+            ]
+          }
+        ],
+        "label": "Chorus",
+        "type": "chorus"
+      },
+      {
+        "kind": "line",
+        "segments": [
+          {
+            "chord": "E",
+            "occurrenceIdx": 26,
+            "text": " "
+          },
+          {
+            "annotation": "|",
+            "text": " "
+          },
+          {
+            "chord": "B",
+            "occurrenceIdx": 27,
+            "text": " "
+          },
+          {
+            "annotation": "|",
+            "text": " "
+          },
+          {
+            "chord": "G",
+            "occurrenceIdx": 28,
+            "text": " "
+          },
+          {
+            "annotation": "|",
+            "text": " "
+          },
+          {
+            "chord": "A",
+            "occurrenceIdx": 29,
+            "text": ""
+          }
+        ]
+      },
+      {
+        "kind": "section",
+        "body": [
+          {
+            "kind": "line",
+            "segments": [
+              {
+                "chord": "E",
+                "occurrenceIdx": 30,
+                "text": "Remember the old arc"
+              },
+              {
+                "chord": "B",
+                "occurrenceIdx": 31,
+                "text": "ade? Blew every dollar that we ever "
+              },
+              {
+                "chord": "D",
+                "occurrenceIdx": 32,
+                "text": "made."
+              }
+            ]
+          },
+          {
+            "kind": "line",
+            "segments": [
+              {
+                "text": "The Cops hated us hangin' "
+              },
+              {
+                "chord": "A",
+                "occurrenceIdx": 33,
+                "text": "out, they say somebody went and burned it "
+              },
+              {
+                "chord": "E",
+                "occurrenceIdx": 34,
+                "text": "down."
+              }
+            ]
+          },
+          {
+            "kind": "line",
+            "segments": [
+              {
+                "text": "We use to listen to the ra"
+              },
+              {
+                "chord": "B",
+                "occurrenceIdx": 35,
+                "text": "dio and sing along with every song we'd "
+              },
+              {
+                "chord": "D",
+                "occurrenceIdx": 36,
+                "text": "know."
+              }
+            ]
+          },
+          {
+            "kind": "line",
+            "segments": [
+              {
+                "text": "We said someday we'd find out how it "
+              },
+              {
+                "chord": "A",
+                "occurrenceIdx": 37,
+                "text": "feels to sing to more than just the"
+              }
+            ]
+          },
+          {
+            "kind": "line",
+            "segments": [
+              {
+                "text": "steering "
+              },
+              {
+                "chord": "E",
+                "occurrenceIdx": 38,
+                "text": "wheel. Kim's the first girl I "
+              },
+              {
+                "chord": "B",
+                "occurrenceIdx": 39,
+                "text": "kissed. I was so nervous that I nearly "
+              }
+            ]
+          },
+          {
+            "kind": "line",
+            "segments": [
+              {
+                "chord": "D",
+                "occurrenceIdx": 40,
+                "text": "missed."
+              }
+            ]
+          },
+          {
+            "kind": "line",
+            "segments": [
+              {
+                "text": "She's had a couple of kids since "
+              },
+              {
+                "chord": "A",
+                "occurrenceIdx": 41,
+                "text": "then. I haven't seen her since god knows"
+              }
+            ]
+          },
+          {
+            "kind": "line",
+            "segments": [
+              {
+                "chord": "G",
+                "occurrenceIdx": 42,
+                "text": "when... Oh Oh "
+              },
+              {
+                "chord": "A",
+                "occurrenceIdx": 43,
+                "text": "Oh... Oh God I!"
+              }
+            ]
+          }
+        ],
+        "label": "Verse 2",
+        "type": "verse"
+      },
+      {
+        "kind": "section",
+        "body": [
+          {
+            "kind": "line",
+            "segments": [
+              {
+                "text": "Every "
+              },
+              {
+                "chord": "E",
+                "occurrenceIdx": 44,
+                "text": "memory of lookin out the back door, I had the "
+              },
+              {
+                "chord": "B",
+                "occurrenceIdx": 45,
+                "text": "photo album spread"
+              }
+            ]
+          },
+          {
+            "kind": "line",
+            "segments": [
+              {
+                "text": "out on my bedroom floor, It's "
+              },
+              {
+                "chord": "D",
+                "occurrenceIdx": 46,
+                "text": "hard to say it, time to say it"
+              }
+            ]
+          },
+          {
+            "kind": "line",
+            "segments": [
+              {
+                "chord": "A",
+                "occurrenceIdx": 47,
+                "text": "Good-bye, Good-bye."
+              }
+            ]
+          },
+          {
+            "kind": "line",
+            "segments": [
+              {
+                "text": "Every "
+              },
+              {
+                "chord": "E",
+                "occurrenceIdx": 48,
+                "text": "memory of walkin out the front door, I found the "
+              },
+              {
+                "chord": "B",
+                "occurrenceIdx": 49,
+                "text": "photo of the friend"
+              }
+            ]
+          },
+          {
+            "kind": "line",
+            "segments": [
+              {
+                "text": "that I was looking for, It's "
+              },
+              {
+                "chord": "D",
+                "occurrenceIdx": 50,
+                "text": "hard to say it, time to say it"
+              }
+            ]
+          },
+          {
+            "kind": "line",
+            "segments": [
+              {
+                "chord": "A",
+                "occurrenceIdx": 51,
+                "text": "Good-Bye, Good-Bye."
+              }
+            ]
+          }
+        ],
+        "label": "Chorus",
+        "type": "chorus"
+      },
+      {
+        "kind": "line",
+        "segments": [
+          {
+            "chord": "C",
+            "occurrenceIdx": 52,
+            "text": " "
+          },
+          {
+            "annotation": "|",
+            "text": " "
+          },
+          {
+            "chord": "D",
+            "occurrenceIdx": 53,
+            "text": ""
+          }
+        ]
+      },
+      {
+        "kind": "section",
+        "body": [
+          {
+            "kind": "line",
+            "segments": [
+              {
+                "chord": "E",
+                "occurrenceIdx": 54,
+                "text": "I miss that tim"
+              },
+              {
+                "chord": "B",
+                "occurrenceIdx": 55,
+                "text": "e, I miss their "
+              },
+              {
+                "chord": "G",
+                "occurrenceIdx": 56,
+                "text": "faces"
+              }
+            ]
+          },
+          {
+            "kind": "line",
+            "segments": [
+              {
+                "text": "You can't er"
+              },
+              {
+                "chord": "A",
+                "occurrenceIdx": 57,
+                "text": "ase, You can't repl"
+              },
+              {
+                "chord": "E",
+                "occurrenceIdx": 58,
+                "text": "ace it."
+              }
+            ]
+          },
+          {
+            "kind": "line",
+            "segments": [
+              {
+                "text": "I miss it n"
+              },
+              {
+                "chord": "B",
+                "occurrenceIdx": 59,
+                "text": "ow. I can't beli"
+              },
+              {
+                "chord": "G",
+                "occurrenceIdx": 60,
+                "text": "eve it."
+              }
+            ]
+          },
+          {
+            "kind": "line",
+            "segments": [
+              {
+                "text": "So hard to s"
+              },
+              {
+                "chord": "A",
+                "occurrenceIdx": 61,
+                "text": "tay. To hard to le"
+              },
+              {
+                "chord": "E",
+                "occurrenceIdx": 62,
+                "text": "ave it."
+              }
+            ]
+          }
+        ],
+        "label": "Bridge",
+        "type": "bridge"
+      },
+      {
+        "kind": "section",
+        "body": [
+          {
+            "kind": "line",
+            "segments": [
+              {
+                "chord": "E",
+                "occurrenceIdx": 63,
+                "text": "If I could relive those "
+              },
+              {
+                "chord": "B",
+                "occurrenceIdx": 64,
+                "text": "days I know the one thing that would never "
+              },
+              {
+                "chord": "D",
+                "occurrenceIdx": 65,
+                "text": "change..."
+              }
+            ]
+          }
+        ],
+        "label": "Bridge",
+        "type": "bridge"
+      },
+      {
+        "kind": "section",
+        "body": [
+          {
+            "kind": "line",
+            "segments": [
+              {
+                "text": "Every "
+              },
+              {
+                "chord": "E",
+                "occurrenceIdx": 66,
+                "text": "memory of lookin out the back door, I had the "
+              },
+              {
+                "chord": "B",
+                "occurrenceIdx": 67,
+                "text": "photo album spread"
+              }
+            ]
+          },
+          {
+            "kind": "line",
+            "segments": [
+              {
+                "text": "out on my bedroom floor, It's "
+              },
+              {
+                "chord": "D",
+                "occurrenceIdx": 68,
+                "text": "hard to say it, time to say it"
+              }
+            ]
+          },
+          {
+            "kind": "line",
+            "segments": [
+              {
+                "chord": "A",
+                "occurrenceIdx": 69,
+                "text": "Good-bye, Good-bye."
+              }
+            ]
+          },
+          {
+            "kind": "line",
+            "segments": [
+              {
+                "text": "Every "
+              },
+              {
+                "chord": "E",
+                "occurrenceIdx": 70,
+                "text": "memory of walkin out the front door, I found the "
+              },
+              {
+                "chord": "B",
+                "occurrenceIdx": 71,
+                "text": "photo of the friend"
+              }
+            ]
+          },
+          {
+            "kind": "line",
+            "segments": [
+              {
+                "text": "that I was looking for, It's "
+              },
+              {
+                "chord": "D",
+                "occurrenceIdx": 72,
+                "text": "hard to say it, time to say it"
+              }
+            ]
+          },
+          {
+            "kind": "line",
+            "segments": [
+              {
+                "chord": "A",
+                "occurrenceIdx": 73,
+                "text": "Good-Bye, Good-Bye."
+              }
+            ]
+          }
+        ],
+        "label": "Chorus",
+        "type": "chorus"
+      },
+      {
+        "kind": "section",
+        "body": [
+          {
+            "kind": "line",
+            "segments": [
+              {
+                "chord": "E",
+                "occurrenceIdx": 74,
+                "text": "Look at this photo"
+              },
+              {
+                "chord": "B",
+                "occurrenceIdx": 75,
+                "text": "graph...every time I do it makes me "
+              },
+              {
+                "chord": "D",
+                "occurrenceIdx": 76,
+                "text": "laugh."
+              }
+            ]
+          },
+          {
+            "kind": "line",
+            "segments": [
+              {
+                "text": "Every time I do it makes "
+              },
+              {
+                "chord": "A",
+                "occurrenceIdx": 77,
+                "text": "me."
+              }
+            ]
+          }
+        ],
+        "label": "Chorus",
+        "type": "chorus"
+      }
+    ]
+  },
   "occurrences": [
     {
       "occurrenceIdx": 0,
-      "sectionIdx": 0,
-      "lineIdx": 0,
-      "slotIdx": 0,
+      "path": [
+        0,
+        0
+      ],
+      "segmentIdx": 0,
       "chord": "E",
       "anchorWord": "Look"
     },
     {
       "occurrenceIdx": 1,
-      "sectionIdx": 0,
-      "lineIdx": 0,
-      "slotIdx": 1,
+      "path": [
+        0,
+        0
+      ],
+      "segmentIdx": 1,
       "chord": "B",
       "anchorWord": "graph"
     },
     {
       "occurrenceIdx": 2,
-      "sectionIdx": 0,
-      "lineIdx": 0,
-      "slotIdx": 2,
+      "path": [
+        0,
+        0
+      ],
+      "segmentIdx": 2,
       "chord": "D",
       "anchorWord": "augh"
     },
     {
       "occurrenceIdx": 3,
-      "sectionIdx": 0,
-      "lineIdx": 1,
-      "slotIdx": 1,
+      "path": [
+        0,
+        1
+      ],
+      "segmentIdx": 1,
       "chord": "A",
       "anchorWord": "red"
     },
     {
       "occurrenceIdx": 4,
-      "sectionIdx": 0,
-      "lineIdx": 1,
-      "slotIdx": 2,
+      "path": [
+        0,
+        1
+      ],
+      "segmentIdx": 2,
       "chord": "E",
       "anchorWord": "head"
     },
     {
       "occurrenceIdx": 5,
-      "sectionIdx": 0,
-      "lineIdx": 2,
-      "slotIdx": 1,
+      "path": [
+        0,
+        2
+      ],
+      "segmentIdx": 1,
       "chord": "B",
       "anchorWord": "up"
     },
     {
       "occurrenceIdx": 6,
-      "sectionIdx": 0,
-      "lineIdx": 2,
-      "slotIdx": 2,
+      "path": [
+        0,
+        2
+      ],
+      "segmentIdx": 2,
       "chord": "D",
       "anchorWord": "up"
     },
     {
       "occurrenceIdx": 7,
-      "sectionIdx": 0,
-      "lineIdx": 3,
-      "slotIdx": 1,
+      "path": [
+        0,
+        3
+      ],
+      "segmentIdx": 1,
       "chord": "A",
       "anchorWord": "hout"
     },
     {
       "occurrenceIdx": 8,
-      "sectionIdx": 0,
-      "lineIdx": 3,
-      "slotIdx": 2,
+      "path": [
+        0,
+        3
+      ],
+      "segmentIdx": 2,
       "chord": "E",
       "anchorWord": "out"
     },
     {
       "occurrenceIdx": 9,
-      "sectionIdx": 0,
-      "lineIdx": 4,
-      "slotIdx": 1,
+      "path": [
+        0,
+        4
+      ],
+      "segmentIdx": 1,
       "chord": "B",
       "anchorWord": "chool"
     },
     {
       "occurrenceIdx": 10,
-      "sectionIdx": 0,
-      "lineIdx": 4,
-      "slotIdx": 2,
+      "path": [
+        0,
+        4
+      ],
+      "segmentIdx": 2,
       "chord": "D",
       "anchorWord": "do"
     },
     {
       "occurrenceIdx": 11,
-      "sectionIdx": 0,
-      "lineIdx": 5,
-      "slotIdx": 1,
+      "path": [
+        0,
+        5
+      ],
+      "segmentIdx": 1,
       "chord": "A",
       "anchorWord": "twice"
     },
     {
       "occurrenceIdx": 12,
-      "sectionIdx": 0,
-      "lineIdx": 5,
-      "slotIdx": 2,
+      "path": [
+        0,
+        5
+      ],
+      "segmentIdx": 2,
       "chord": "E",
       "anchorWord": "times"
     },
     {
       "occurrenceIdx": 13,
-      "sectionIdx": 0,
-      "lineIdx": 6,
-      "slotIdx": 1,
+      "path": [
+        0,
+        6
+      ],
+      "segmentIdx": 1,
       "chord": "B",
       "anchorWord": "ate"
     },
     {
       "occurrenceIdx": 14,
-      "sectionIdx": 0,
-      "lineIdx": 6,
-      "slotIdx": 2,
+      "path": [
+        0,
+        6
+      ],
+      "segmentIdx": 2,
       "chord": "D",
       "anchorWord": "duate"
     },
     {
       "occurrenceIdx": 15,
-      "sectionIdx": 0,
-      "lineIdx": 7,
-      "slotIdx": 1,
+      "path": [
+        0,
+        7
+      ],
+      "segmentIdx": 1,
       "chord": "A",
       "anchorWord": "then"
     },
     {
       "occurrenceIdx": 16,
-      "sectionIdx": 0,
-      "lineIdx": 8,
-      "slotIdx": 0,
+      "path": [
+        0,
+        8
+      ],
+      "segmentIdx": 0,
       "chord": "G",
       "anchorWord": "in"
     },
     {
       "occurrenceIdx": 17,
-      "sectionIdx": 0,
-      "lineIdx": 8,
-      "slotIdx": 1,
+      "path": [
+        0,
+        8
+      ],
+      "segmentIdx": 1,
       "chord": "A",
       "anchorWord": "Oh"
     },
     {
       "occurrenceIdx": 18,
-      "sectionIdx": 1,
-      "lineIdx": 0,
-      "slotIdx": 1,
+      "path": [
+        1,
+        0
+      ],
+      "segmentIdx": 1,
       "chord": "E",
       "anchorWord": "memory"
     },
     {
       "occurrenceIdx": 19,
-      "sectionIdx": 1,
-      "lineIdx": 0,
-      "slotIdx": 2,
+      "path": [
+        1,
+        0
+      ],
+      "segmentIdx": 2,
       "chord": "B",
       "anchorWord": "photo"
     },
     {
       "occurrenceIdx": 20,
-      "sectionIdx": 1,
-      "lineIdx": 1,
-      "slotIdx": 1,
+      "path": [
+        1,
+        1
+      ],
+      "segmentIdx": 1,
       "chord": "D",
       "anchorWord": "hard"
     },
     {
       "occurrenceIdx": 21,
-      "sectionIdx": 1,
-      "lineIdx": 2,
-      "slotIdx": 0,
+      "path": [
+        1,
+        2
+      ],
+      "segmentIdx": 0,
       "chord": "A",
       "anchorWord": "Good-bye"
     },
     {
       "occurrenceIdx": 22,
-      "sectionIdx": 1,
-      "lineIdx": 3,
-      "slotIdx": 1,
+      "path": [
+        1,
+        3
+      ],
+      "segmentIdx": 1,
       "chord": "E",
       "anchorWord": "memory"
     },
     {
       "occurrenceIdx": 23,
-      "sectionIdx": 1,
-      "lineIdx": 3,
-      "slotIdx": 2,
+      "path": [
+        1,
+        3
+      ],
+      "segmentIdx": 2,
       "chord": "B",
       "anchorWord": "photo"
     },
     {
       "occurrenceIdx": 24,
-      "sectionIdx": 1,
-      "lineIdx": 4,
-      "slotIdx": 1,
+      "path": [
+        1,
+        4
+      ],
+      "segmentIdx": 1,
       "chord": "D",
       "anchorWord": "hard"
     },
     {
       "occurrenceIdx": 25,
-      "sectionIdx": 1,
-      "lineIdx": 5,
-      "slotIdx": 0,
+      "path": [
+        1,
+        5
+      ],
+      "segmentIdx": 0,
       "chord": "A",
       "anchorWord": "Good-Bye"
     },
     {
       "occurrenceIdx": 26,
-      "sectionIdx": 2,
-      "lineIdx": 0,
-      "slotIdx": 0,
+      "path": [
+        2
+      ],
+      "segmentIdx": 0,
+      "chord": "E"
+    },
+    {
+      "occurrenceIdx": 27,
+      "path": [
+        2
+      ],
+      "segmentIdx": 2,
+      "chord": "B"
+    },
+    {
+      "occurrenceIdx": 28,
+      "path": [
+        2
+      ],
+      "segmentIdx": 4,
+      "chord": "G"
+    },
+    {
+      "occurrenceIdx": 29,
+      "path": [
+        2
+      ],
+      "segmentIdx": 6,
+      "chord": "A"
+    },
+    {
+      "occurrenceIdx": 30,
+      "path": [
+        3,
+        0
+      ],
+      "segmentIdx": 0,
       "chord": "E",
       "anchorWord": "Remember"
     },
     {
-      "occurrenceIdx": 27,
-      "sectionIdx": 2,
-      "lineIdx": 0,
-      "slotIdx": 1,
+      "occurrenceIdx": 31,
+      "path": [
+        3,
+        0
+      ],
+      "segmentIdx": 1,
       "chord": "B",
       "anchorWord": "ade"
     },
     {
-      "occurrenceIdx": 28,
-      "sectionIdx": 2,
-      "lineIdx": 0,
-      "slotIdx": 2,
+      "occurrenceIdx": 32,
+      "path": [
+        3,
+        0
+      ],
+      "segmentIdx": 2,
       "chord": "D",
       "anchorWord": "made"
     },
     {
-      "occurrenceIdx": 29,
-      "sectionIdx": 2,
-      "lineIdx": 1,
-      "slotIdx": 1,
+      "occurrenceIdx": 33,
+      "path": [
+        3,
+        1
+      ],
+      "segmentIdx": 1,
       "chord": "A",
       "anchorWord": "out"
     },
     {
-      "occurrenceIdx": 30,
-      "sectionIdx": 2,
-      "lineIdx": 1,
-      "slotIdx": 2,
+      "occurrenceIdx": 34,
+      "path": [
+        3,
+        1
+      ],
+      "segmentIdx": 2,
       "chord": "E",
       "anchorWord": "down"
     },
     {
-      "occurrenceIdx": 31,
-      "sectionIdx": 2,
-      "lineIdx": 2,
-      "slotIdx": 1,
+      "occurrenceIdx": 35,
+      "path": [
+        3,
+        2
+      ],
+      "segmentIdx": 1,
       "chord": "B",
       "anchorWord": "dio"
     },
     {
-      "occurrenceIdx": 32,
-      "sectionIdx": 2,
-      "lineIdx": 2,
-      "slotIdx": 2,
+      "occurrenceIdx": 36,
+      "path": [
+        3,
+        2
+      ],
+      "segmentIdx": 2,
       "chord": "D",
       "anchorWord": "know"
     },
     {
-      "occurrenceIdx": 33,
-      "sectionIdx": 2,
-      "lineIdx": 3,
-      "slotIdx": 1,
+      "occurrenceIdx": 37,
+      "path": [
+        3,
+        3
+      ],
+      "segmentIdx": 1,
       "chord": "A",
       "anchorWord": "feels"
     },
     {
-      "occurrenceIdx": 34,
-      "sectionIdx": 2,
-      "lineIdx": 4,
-      "slotIdx": 1,
+      "occurrenceIdx": 38,
+      "path": [
+        3,
+        4
+      ],
+      "segmentIdx": 1,
       "chord": "E",
       "anchorWord": "wheel"
     },
     {
-      "occurrenceIdx": 35,
-      "sectionIdx": 2,
-      "lineIdx": 4,
-      "slotIdx": 2,
+      "occurrenceIdx": 39,
+      "path": [
+        3,
+        4
+      ],
+      "segmentIdx": 2,
       "chord": "B",
       "anchorWord": "kissed"
     },
     {
-      "occurrenceIdx": 36,
-      "sectionIdx": 2,
-      "lineIdx": 5,
-      "slotIdx": 0,
+      "occurrenceIdx": 40,
+      "path": [
+        3,
+        5
+      ],
+      "segmentIdx": 0,
       "chord": "D",
       "anchorWord": "missed"
     },
     {
-      "occurrenceIdx": 37,
-      "sectionIdx": 2,
-      "lineIdx": 6,
-      "slotIdx": 1,
+      "occurrenceIdx": 41,
+      "path": [
+        3,
+        6
+      ],
+      "segmentIdx": 1,
       "chord": "A",
       "anchorWord": "then"
     },
     {
-      "occurrenceIdx": 38,
-      "sectionIdx": 2,
-      "lineIdx": 7,
-      "slotIdx": 0,
+      "occurrenceIdx": 42,
+      "path": [
+        3,
+        7
+      ],
+      "segmentIdx": 0,
       "chord": "G",
       "anchorWord": "when"
     },
     {
-      "occurrenceIdx": 39,
-      "sectionIdx": 2,
-      "lineIdx": 7,
-      "slotIdx": 1,
+      "occurrenceIdx": 43,
+      "path": [
+        3,
+        7
+      ],
+      "segmentIdx": 1,
       "chord": "A",
       "anchorWord": "Oh"
     },
     {
-      "occurrenceIdx": 40,
-      "sectionIdx": 3,
-      "lineIdx": 0,
-      "slotIdx": 1,
-      "chord": "E",
-      "anchorWord": "memory"
-    },
-    {
-      "occurrenceIdx": 41,
-      "sectionIdx": 3,
-      "lineIdx": 0,
-      "slotIdx": 2,
-      "chord": "B",
-      "anchorWord": "photo"
-    },
-    {
-      "occurrenceIdx": 42,
-      "sectionIdx": 3,
-      "lineIdx": 1,
-      "slotIdx": 1,
-      "chord": "D",
-      "anchorWord": "hard"
-    },
-    {
-      "occurrenceIdx": 43,
-      "sectionIdx": 3,
-      "lineIdx": 2,
-      "slotIdx": 0,
-      "chord": "A",
-      "anchorWord": "Good-bye"
-    },
-    {
       "occurrenceIdx": 44,
-      "sectionIdx": 3,
-      "lineIdx": 3,
-      "slotIdx": 1,
+      "path": [
+        4,
+        0
+      ],
+      "segmentIdx": 1,
       "chord": "E",
       "anchorWord": "memory"
     },
     {
       "occurrenceIdx": 45,
-      "sectionIdx": 3,
-      "lineIdx": 3,
-      "slotIdx": 2,
+      "path": [
+        4,
+        0
+      ],
+      "segmentIdx": 2,
       "chord": "B",
       "anchorWord": "photo"
     },
     {
       "occurrenceIdx": 46,
-      "sectionIdx": 3,
-      "lineIdx": 4,
-      "slotIdx": 1,
+      "path": [
+        4,
+        1
+      ],
+      "segmentIdx": 1,
       "chord": "D",
       "anchorWord": "hard"
     },
     {
       "occurrenceIdx": 47,
-      "sectionIdx": 3,
-      "lineIdx": 5,
-      "slotIdx": 0,
-      "chord": "A",
-      "anchorWord": "Good-Bye"
-    },
-    {
-      "occurrenceIdx": 48,
-      "sectionIdx": 4,
-      "lineIdx": 0,
-      "slotIdx": 0,
-      "chord": "E",
-      "anchorWord": "I"
-    },
-    {
-      "occurrenceIdx": 49,
-      "sectionIdx": 4,
-      "lineIdx": 0,
-      "slotIdx": 1,
-      "chord": "B",
-      "anchorWord": "e"
-    },
-    {
-      "occurrenceIdx": 50,
-      "sectionIdx": 4,
-      "lineIdx": 0,
-      "slotIdx": 2,
-      "chord": "G",
-      "anchorWord": "faces"
-    },
-    {
-      "occurrenceIdx": 51,
-      "sectionIdx": 4,
-      "lineIdx": 1,
-      "slotIdx": 1,
-      "chord": "A",
-      "anchorWord": "ase"
-    },
-    {
-      "occurrenceIdx": 52,
-      "sectionIdx": 4,
-      "lineIdx": 1,
-      "slotIdx": 2,
-      "chord": "E",
-      "anchorWord": "ace"
-    },
-    {
-      "occurrenceIdx": 53,
-      "sectionIdx": 4,
-      "lineIdx": 2,
-      "slotIdx": 1,
-      "chord": "B",
-      "anchorWord": "ow"
-    },
-    {
-      "occurrenceIdx": 54,
-      "sectionIdx": 4,
-      "lineIdx": 2,
-      "slotIdx": 2,
-      "chord": "G",
-      "anchorWord": "eve"
-    },
-    {
-      "occurrenceIdx": 55,
-      "sectionIdx": 4,
-      "lineIdx": 3,
-      "slotIdx": 1,
-      "chord": "A",
-      "anchorWord": "tay"
-    },
-    {
-      "occurrenceIdx": 56,
-      "sectionIdx": 4,
-      "lineIdx": 3,
-      "slotIdx": 2,
-      "chord": "E",
-      "anchorWord": "ave"
-    },
-    {
-      "occurrenceIdx": 57,
-      "sectionIdx": 5,
-      "lineIdx": 0,
-      "slotIdx": 0,
-      "chord": "E",
-      "anchorWord": "If"
-    },
-    {
-      "occurrenceIdx": 58,
-      "sectionIdx": 5,
-      "lineIdx": 0,
-      "slotIdx": 1,
-      "chord": "B",
-      "anchorWord": "days"
-    },
-    {
-      "occurrenceIdx": 59,
-      "sectionIdx": 5,
-      "lineIdx": 0,
-      "slotIdx": 2,
-      "chord": "D",
-      "anchorWord": "change"
-    },
-    {
-      "occurrenceIdx": 60,
-      "sectionIdx": 6,
-      "lineIdx": 0,
-      "slotIdx": 1,
-      "chord": "E",
-      "anchorWord": "memory"
-    },
-    {
-      "occurrenceIdx": 61,
-      "sectionIdx": 6,
-      "lineIdx": 0,
-      "slotIdx": 2,
-      "chord": "B",
-      "anchorWord": "photo"
-    },
-    {
-      "occurrenceIdx": 62,
-      "sectionIdx": 6,
-      "lineIdx": 1,
-      "slotIdx": 1,
-      "chord": "D",
-      "anchorWord": "hard"
-    },
-    {
-      "occurrenceIdx": 63,
-      "sectionIdx": 6,
-      "lineIdx": 2,
-      "slotIdx": 0,
+      "path": [
+        4,
+        2
+      ],
+      "segmentIdx": 0,
       "chord": "A",
       "anchorWord": "Good-bye"
     },
     {
-      "occurrenceIdx": 64,
-      "sectionIdx": 6,
-      "lineIdx": 3,
-      "slotIdx": 1,
+      "occurrenceIdx": 48,
+      "path": [
+        4,
+        3
+      ],
+      "segmentIdx": 1,
       "chord": "E",
       "anchorWord": "memory"
     },
     {
-      "occurrenceIdx": 65,
-      "sectionIdx": 6,
-      "lineIdx": 3,
-      "slotIdx": 2,
+      "occurrenceIdx": 49,
+      "path": [
+        4,
+        3
+      ],
+      "segmentIdx": 2,
       "chord": "B",
       "anchorWord": "photo"
     },
     {
-      "occurrenceIdx": 66,
-      "sectionIdx": 6,
-      "lineIdx": 4,
-      "slotIdx": 1,
+      "occurrenceIdx": 50,
+      "path": [
+        4,
+        4
+      ],
+      "segmentIdx": 1,
       "chord": "D",
       "anchorWord": "hard"
     },
     {
-      "occurrenceIdx": 67,
-      "sectionIdx": 6,
-      "lineIdx": 5,
-      "slotIdx": 0,
+      "occurrenceIdx": 51,
+      "path": [
+        4,
+        5
+      ],
+      "segmentIdx": 0,
       "chord": "A",
       "anchorWord": "Good-Bye"
     },
     {
+      "occurrenceIdx": 52,
+      "path": [
+        5
+      ],
+      "segmentIdx": 0,
+      "chord": "C"
+    },
+    {
+      "occurrenceIdx": 53,
+      "path": [
+        5
+      ],
+      "segmentIdx": 2,
+      "chord": "D"
+    },
+    {
+      "occurrenceIdx": 54,
+      "path": [
+        6,
+        0
+      ],
+      "segmentIdx": 0,
+      "chord": "E",
+      "anchorWord": "I"
+    },
+    {
+      "occurrenceIdx": 55,
+      "path": [
+        6,
+        0
+      ],
+      "segmentIdx": 1,
+      "chord": "B",
+      "anchorWord": "e"
+    },
+    {
+      "occurrenceIdx": 56,
+      "path": [
+        6,
+        0
+      ],
+      "segmentIdx": 2,
+      "chord": "G",
+      "anchorWord": "faces"
+    },
+    {
+      "occurrenceIdx": 57,
+      "path": [
+        6,
+        1
+      ],
+      "segmentIdx": 1,
+      "chord": "A",
+      "anchorWord": "ase"
+    },
+    {
+      "occurrenceIdx": 58,
+      "path": [
+        6,
+        1
+      ],
+      "segmentIdx": 2,
+      "chord": "E",
+      "anchorWord": "ace"
+    },
+    {
+      "occurrenceIdx": 59,
+      "path": [
+        6,
+        2
+      ],
+      "segmentIdx": 1,
+      "chord": "B",
+      "anchorWord": "ow"
+    },
+    {
+      "occurrenceIdx": 60,
+      "path": [
+        6,
+        2
+      ],
+      "segmentIdx": 2,
+      "chord": "G",
+      "anchorWord": "eve"
+    },
+    {
+      "occurrenceIdx": 61,
+      "path": [
+        6,
+        3
+      ],
+      "segmentIdx": 1,
+      "chord": "A",
+      "anchorWord": "tay"
+    },
+    {
+      "occurrenceIdx": 62,
+      "path": [
+        6,
+        3
+      ],
+      "segmentIdx": 2,
+      "chord": "E",
+      "anchorWord": "ave"
+    },
+    {
+      "occurrenceIdx": 63,
+      "path": [
+        7,
+        0
+      ],
+      "segmentIdx": 0,
+      "chord": "E",
+      "anchorWord": "If"
+    },
+    {
+      "occurrenceIdx": 64,
+      "path": [
+        7,
+        0
+      ],
+      "segmentIdx": 1,
+      "chord": "B",
+      "anchorWord": "days"
+    },
+    {
+      "occurrenceIdx": 65,
+      "path": [
+        7,
+        0
+      ],
+      "segmentIdx": 2,
+      "chord": "D",
+      "anchorWord": "change"
+    },
+    {
+      "occurrenceIdx": 66,
+      "path": [
+        8,
+        0
+      ],
+      "segmentIdx": 1,
+      "chord": "E",
+      "anchorWord": "memory"
+    },
+    {
+      "occurrenceIdx": 67,
+      "path": [
+        8,
+        0
+      ],
+      "segmentIdx": 2,
+      "chord": "B",
+      "anchorWord": "photo"
+    },
+    {
       "occurrenceIdx": 68,
-      "sectionIdx": 7,
-      "lineIdx": 0,
-      "slotIdx": 0,
+      "path": [
+        8,
+        1
+      ],
+      "segmentIdx": 1,
+      "chord": "D",
+      "anchorWord": "hard"
+    },
+    {
+      "occurrenceIdx": 69,
+      "path": [
+        8,
+        2
+      ],
+      "segmentIdx": 0,
+      "chord": "A",
+      "anchorWord": "Good-bye"
+    },
+    {
+      "occurrenceIdx": 70,
+      "path": [
+        8,
+        3
+      ],
+      "segmentIdx": 1,
+      "chord": "E",
+      "anchorWord": "memory"
+    },
+    {
+      "occurrenceIdx": 71,
+      "path": [
+        8,
+        3
+      ],
+      "segmentIdx": 2,
+      "chord": "B",
+      "anchorWord": "photo"
+    },
+    {
+      "occurrenceIdx": 72,
+      "path": [
+        8,
+        4
+      ],
+      "segmentIdx": 1,
+      "chord": "D",
+      "anchorWord": "hard"
+    },
+    {
+      "occurrenceIdx": 73,
+      "path": [
+        8,
+        5
+      ],
+      "segmentIdx": 0,
+      "chord": "A",
+      "anchorWord": "Good-Bye"
+    },
+    {
+      "occurrenceIdx": 74,
+      "path": [
+        9,
+        0
+      ],
+      "segmentIdx": 0,
       "chord": "E",
       "anchorWord": "Look"
     },
     {
-      "occurrenceIdx": 69,
-      "sectionIdx": 7,
-      "lineIdx": 0,
-      "slotIdx": 1,
+      "occurrenceIdx": 75,
+      "path": [
+        9,
+        0
+      ],
+      "segmentIdx": 1,
       "chord": "B",
       "anchorWord": "graph"
     },
     {
-      "occurrenceIdx": 70,
-      "sectionIdx": 7,
-      "lineIdx": 0,
-      "slotIdx": 2,
+      "occurrenceIdx": 76,
+      "path": [
+        9,
+        0
+      ],
+      "segmentIdx": 2,
       "chord": "D",
       "anchorWord": "laugh"
     },
     {
-      "occurrenceIdx": 71,
-      "sectionIdx": 7,
-      "lineIdx": 1,
-      "slotIdx": 1,
+      "occurrenceIdx": 77,
+      "path": [
+        9,
+        1
+      ],
+      "segmentIdx": 1,
       "chord": "A",
       "anchorWord": "me"
     }

@@ -2,7 +2,7 @@ import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
 import { ref, nextTick } from 'vue'
 import { defineComponent, createApp } from 'vue'
 import { usePlaybackEngine } from '../composables/usePlaybackEngine'
-import type { TranscriptionBundle, SyncPlayData } from '../types/transcriptionBundle'
+import type { TranscriptionBundle, SyncPlayData, Section, Line } from '../types/transcriptionBundle'
 
 // ---------------------------------------------------------------------------
 // Test infrastructure
@@ -24,37 +24,57 @@ function withSetup<T>(composableFn: () => T): { result: T; unmount: () => void }
   return { result, unmount: () => app.unmount() }
 }
 
-// 5 occurrences across 2 sections (3 in section 0, 2 in section 1)
+// 5 occurrences across 2 named sections (3 in section 0, 2 in section 1).
+//
+// body.body layout:
+//   [0] Section (kind='section') — 3 chords on one line
+//   [1] Section (kind='section') — 2 chords on one line
+//
+// occurrences[]:
+//   idx 0 → path [0,0] segmentIdx 0  chord G
+//   idx 1 → path [0,0] segmentIdx 1  chord D
+//   idx 2 → path [0,0] segmentIdx 2  chord Em
+//   idx 3 → path [1,0] segmentIdx 0  chord C
+//   idx 4 → path [1,0] segmentIdx 1  chord Am
 function makeBundle(offsetSec = 0): TranscriptionBundle {
+  const section0: Section = {
+    kind: 'section',
+    body: [
+      {
+        kind: 'line',
+        segments: [
+          { chord: 'G',  occurrenceIdx: 0 },
+          { chord: 'D',  occurrenceIdx: 1 },
+          { chord: 'Em', occurrenceIdx: 2 },
+        ],
+      } satisfies Line,
+    ],
+  }
+
+  const section1: Section = {
+    kind: 'section',
+    body: [
+      {
+        kind: 'line',
+        segments: [
+          { chord: 'C',  occurrenceIdx: 3 },
+          { chord: 'Am', occurrenceIdx: 4 },
+        ],
+      } satisfies Line,
+    ],
+  }
+
   return {
     source: { kind: 'youtube', videoId: 'test', offsetSec },
     version: 1,
     metadata: {},
-    sections: [
-      {
-        lines: [
-          { slots: [
-            { chord: 'G', occurrenceIdx: 0 },
-            { chord: 'D', occurrenceIdx: 1 },
-            { chord: 'Em', occurrenceIdx: 2 },
-          ]},
-        ],
-      },
-      {
-        lines: [
-          { slots: [
-            { chord: 'C', occurrenceIdx: 3 },
-            { chord: 'Am', occurrenceIdx: 4 },
-          ]},
-        ],
-      },
-    ],
+    body: { kind: 'section', body: [section0, section1] },
     occurrences: [
-      { occurrenceIdx: 0, sectionIdx: 0, lineIdx: 0, slotIdx: 0, chord: 'G' },
-      { occurrenceIdx: 1, sectionIdx: 0, lineIdx: 0, slotIdx: 1, chord: 'D' },
-      { occurrenceIdx: 2, sectionIdx: 0, lineIdx: 0, slotIdx: 2, chord: 'Em' },
-      { occurrenceIdx: 3, sectionIdx: 1, lineIdx: 0, slotIdx: 0, chord: 'C' },
-      { occurrenceIdx: 4, sectionIdx: 1, lineIdx: 0, slotIdx: 1, chord: 'Am' },
+      { occurrenceIdx: 0, path: [0, 0], segmentIdx: 0, chord: 'G'  },
+      { occurrenceIdx: 1, path: [0, 0], segmentIdx: 1, chord: 'D'  },
+      { occurrenceIdx: 2, path: [0, 0], segmentIdx: 2, chord: 'Em' },
+      { occurrenceIdx: 3, path: [1, 0], segmentIdx: 0, chord: 'C'  },
+      { occurrenceIdx: 4, path: [1, 0], segmentIdx: 1, chord: 'Am' },
     ],
   }
 }
@@ -101,15 +121,18 @@ describe('usePlaybackEngine', () => {
   // ── initial state before first tick ──────────────────────────────────────
 
   it('initializes with activeEvent null, activeEventIdx null, and activeProgress 0 before playback starts', () => {
+    // Given
     setupRafMocks()
     const bundle = makeBundle()
     const syncPlay = makeSyncPlay([5])
     const playerState = ref(0)
 
+    // When
     const { result, unmount } = withSetup(() =>
       usePlaybackEngine(bundle, syncPlay, () => 0, playerState),
     )
 
+    // Then
     expect(result.activeEvent.value).toBeNull()
     expect(result.activeEventIdx.value).toBeNull()
     expect(result.activeProgress.value).toBe(0)
@@ -120,6 +143,7 @@ describe('usePlaybackEngine', () => {
   // ── time before first timestamp ───────────────────────────────────────────
 
   it('sets activeEvent, activeEventIdx, and activeProgress to null/0 when time is before the first timestamp', async () => {
+    // Given
     const { runTick } = setupRafMocks()
     const bundle = makeBundle()
     const syncPlay = makeSyncPlay([5])
@@ -128,10 +152,12 @@ describe('usePlaybackEngine', () => {
       usePlaybackEngine(bundle, syncPlay, () => 0, playerState),
     )
 
+    // When
     playerState.value = 1
     await nextTick()
     runTick()
 
+    // Then
     expect(result.activeEvent.value).toBeNull()
     expect(result.activeEventIdx.value).toBeNull()
     expect(result.activeProgress.value).toBe(0)
@@ -142,6 +168,7 @@ describe('usePlaybackEngine', () => {
   // ── time exactly on first timestamp ──────────────────────────────────────
 
   it('activates occurrence 0 with progress 0 when time equals its timestamp exactly', async () => {
+    // Given
     const { runTick } = setupRafMocks()
     const bundle = makeBundle()
     const syncPlay = makeSyncPlay([5, 10])
@@ -150,13 +177,14 @@ describe('usePlaybackEngine', () => {
       usePlaybackEngine(bundle, syncPlay, () => 5, playerState),
     )
 
+    // When
     playerState.value = 1
     await nextTick()
     runTick()
 
-    // (5-5)/(10-5) = 0
+    // Then — (5-5)/(10-5) = 0
     expect(result.activeEventIdx.value).toBe(0)
-    expect(result.activeEvent.value).toEqual({ sectionIdx: 0, lineIdx: 0, slotIdx: 0 })
+    expect(result.activeEvent.value).toEqual({ path: [0, 0], segmentIdx: 0 })
     expect(result.activeProgress.value).toBe(0)
 
     unmount()
@@ -165,6 +193,7 @@ describe('usePlaybackEngine', () => {
   // ── fractional progress between two timestamps ────────────────────────────
 
   it('computes the correct fractional activeProgress between two consecutive timestamps', async () => {
+    // Given
     const { runTick } = setupRafMocks()
     const bundle = makeBundle()
     const syncPlay = makeSyncPlay([5, 9])
@@ -173,11 +202,12 @@ describe('usePlaybackEngine', () => {
       usePlaybackEngine(bundle, syncPlay, () => 7, playerState),
     )
 
+    // When
     playerState.value = 1
     await nextTick()
     runTick()
 
-    // (7-5)/(9-5) = 0.5
+    // Then — (7-5)/(9-5) = 0.5
     expect(result.activeEventIdx.value).toBe(0)
     expect(result.activeProgress.value).toBeCloseTo(0.5)
 
@@ -187,6 +217,7 @@ describe('usePlaybackEngine', () => {
   // ── last timestamp: progress always 1 ────────────────────────────────────
 
   it('sets activeProgress to 1 for the last timestamp because there is no next timestamp', async () => {
+    // Given
     const { runTick } = setupRafMocks()
     const bundle = makeBundle()
     const syncPlay = makeSyncPlay([2, 8])
@@ -195,10 +226,12 @@ describe('usePlaybackEngine', () => {
       usePlaybackEngine(bundle, syncPlay, () => 8.5, playerState),
     )
 
+    // When
     playerState.value = 1
     await nextTick()
     runTick()
 
+    // Then
     expect(result.activeEventIdx.value).toBe(1)
     expect(result.activeProgress.value).toBe(1)
 
@@ -208,6 +241,7 @@ describe('usePlaybackEngine', () => {
   // ── offsetSec applied before searching ───────────────────────────────────
 
   it('applies bundle.source.offsetSec to getCurrentTime before the binary search', async () => {
+    // Given
     const { runTick } = setupRafMocks()
     const bundle = makeBundle(3) // offsetSec=3
     const syncPlay = makeSyncPlay([5, 10])
@@ -216,18 +250,21 @@ describe('usePlaybackEngine', () => {
       usePlaybackEngine(bundle, syncPlay, () => 2, playerState), // 2+3=5 → hits idx 0
     )
 
+    // When
     playerState.value = 1
     await nextTick()
     runTick()
 
+    // Then
     expect(result.activeEventIdx.value).toBe(0)
 
     unmount()
   })
 
-  // ── activeEvent carries correct sectionIdx/lineIdx/slotIdx ───────────────
+  // ── activeEvent carries correct path and segmentIdx ───────────────────────
 
-  it('sets activeEvent to the sectionIdx/lineIdx/slotIdx resolved from occurrences[]', async () => {
+  it('sets activeEvent to the path/segmentIdx resolved from occurrences[]', async () => {
+    // Given
     const { runTick } = setupRafMocks()
     const bundle = makeBundle()
     const syncPlay = makeSyncPlay([1, 4])
@@ -236,12 +273,13 @@ describe('usePlaybackEngine', () => {
       usePlaybackEngine(bundle, syncPlay, () => 6, playerState), // lands on idx 1
     )
 
+    // When
     playerState.value = 1
     await nextTick()
     runTick()
 
-    // occurrences[1] = { sectionIdx: 0, lineIdx: 0, slotIdx: 1, chord: 'D' }
-    expect(result.activeEvent.value).toEqual({ sectionIdx: 0, lineIdx: 0, slotIdx: 1 })
+    // Then — occurrences[1] = { path: [0,0], segmentIdx: 1, chord: 'D' }
+    expect(result.activeEvent.value).toEqual({ path: [0, 0], segmentIdx: 1 })
 
     unmount()
   })
@@ -249,6 +287,7 @@ describe('usePlaybackEngine', () => {
   // ── stop prevents further rAF registration ────────────────────────────────
 
   it('stops scheduling rAF frames when playerState leaves PLAYING', async () => {
+    // Given
     const { runTick, rafSpy } = setupRafMocks()
     const bundle = makeBundle()
     const syncPlay = makeSyncPlay([0])
@@ -257,6 +296,7 @@ describe('usePlaybackEngine', () => {
       usePlaybackEngine(bundle, syncPlay, () => 1, playerState),
     )
 
+    // When
     playerState.value = 1
     await nextTick()
     runTick()
@@ -269,6 +309,7 @@ describe('usePlaybackEngine', () => {
     const callCountAfterStop = rafSpy.mock.calls.length
     runTick()
 
+    // Then — no additional rAF calls after stop
     expect(rafSpy.mock.calls.length).toBe(callCountAfterStop)
 
     unmount()

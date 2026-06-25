@@ -3,9 +3,8 @@ import type { Ref, MaybeRef } from 'vue'
 import type { TranscriptionBundle, SyncPlayData } from '../types/transcriptionBundle'
 
 export interface ActiveEvent {
-  sectionIdx: number
-  lineIdx: number
-  slotIdx: number
+  path: number[]
+  segmentIdx: number
 }
 
 function binarySearchTimestampIdx(timestamps: number[], time: number): number {
@@ -65,7 +64,7 @@ export function usePlaybackEngine(
       activeProgress.value = 0
     } else {
       const occ = bundle.occurrences[idx]
-      activeEvent.value = { sectionIdx: occ.sectionIdx, lineIdx: occ.lineIdx, slotIdx: occ.slotIdx }
+      activeEvent.value = { path: occ.path, segmentIdx: occ.segmentIdx }
       activeEventIdx.value = idx
       const nextT = syncPlay.timestamps[idx + 1]
       const currT = syncPlay.timestamps[idx]
