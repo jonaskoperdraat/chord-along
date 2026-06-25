@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Chord-Along · Tap Timestamps</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: 'Courier New', monospace; background: #0d0d1a; color: #e0e0e0; padding: 2rem; }
+    h2 { color: #f0c040; margin-bottom: 0.5rem; }
+    .hint { color: #888; margin-bottom: 1.5rem; font-size: 0.9rem; }
+    .hint kbd { background: #2a2a3e; border: 1px solid #555; border-radius: 3px; padding: 1px 5px; }
+    #player { margin-bottom: 1.5rem; }
+    .controls { display: flex; gap: 0.5rem; flex-wrap: wrap; margin-bottom: 1rem; }
+    button {
+      padding: 0.4rem 0.9rem; background: #2a2a3e; color: #e0e0e0;
+      border: 1px solid #555; cursor: pointer; border-radius: 4px; font-family: inherit;
+    }
+    button:hover { background: #3a3a5e; }
+    button:active { background: #1a1a2e; }
+    .stats { color: #888; margin-bottom: 0.5rem; font-size: 0.9rem; }
+    .stats .count { color: #f0c040; font-weight: bold; }
+    pre {
+      background: #0a0a14; border: 1px solid #2a2a3e; border-radius: 4px;
+      padding: 1rem; white-space: pre-wrap; word-break: break-all;
+      max-height: 320px; overflow-y: auto; font-size: 0.85rem; color: #c0c0d0;
+    }
+    .flash { animation: flash 0.15s ease-out; }
+    @keyframes flash { 0%,100% { background: #0a0a14; } 50% { background: #2a3a1a; } }
+  </style>
+</head>
+<body>
+  <h2>Tap Timestamps</h2>
+  <p class="hint">
+    Press <kbd>Space</kbd> on each chord change while the video plays.<br>
+    <kbd>U</kbd> undoes the last tap. <kbd>C</kbd> copies the JSON.
+  </p>
+
+  <div id="player"></div>
+
+  <div class="controls">
+    <button onclick="undoLast()">Undo last &nbsp;<kbd>U</kbd></button>
+    <button onclick="copyJson()">Copy JSON &nbsp;<kbd>C</kbd></button>
+    <button onclick="resetAll()">Reset</button>
+  </div>
+
+  <p class="stats"><span class="count" id="count">0</span> timestamps recorded</p>
+  <pre id="output">[]</pre>
+
+  <script>
+    const params = new URLSearchParams(location.search)
+    const videoId = params.get('v') || 'BB0DU4DoPP4'
+    const timestamps = []
+    let player
+
+    window.onYouTubeIframeAPIReady = function () {
+      player = new YT.Player('player', {
+        height: '270',
+        width: '480',
+        videoId,
+        playerVars: { playsinline: 1 },
+      })
+    }
+
+    document.addEventListener('keydown', (e) => {
+      if (e.target !== document.body) return
+      if (e.code === 'Space') {
+        e.preventDefault()
+        if (player && player.getPlayerState() === 1) {
+          timestamps.push(Math.round(player.getCurrentTime() * 1000) / 1000)
+          render(true)
+        }
+      }
+      if (e.code === 'KeyU') undoLast()
+      if (e.code === 'KeyC') copyJson()
+    })
+
+    function render(flash = false) {
+      document.getElementById('count').textContent = timestamps.length
+      const pre = document.getElementById('output')
+      pre.textContent = JSON.stringify(timestamps, null, 2)
+      if (flash) {
+        pre.classList.remove('flash')
+        void pre.offsetWidth
+        pre.classList.add('flash')
+      }
+      // scroll to bottom so the latest timestamp is visible
+      pre.scrollTop = pre.scrollHeight
+    }
+
+    function undoLast() {
+      if (timestamps.length > 0) {
+        timestamps.pop()
+        render()
+      }
+    }
+
+    function copyJson() {
+      navigator.clipboard.writeText(JSON.stringify(timestamps))
+        .then(() => {
+          const btn = [...document.querySelectorAll('button')].find(b => b.textContent.includes('Copy'))
+          if (btn) { btn.textContent = 'Copied!'; setTimeout(() => { btn.innerHTML = 'Copy JSON &nbsp;<kbd>C</kbd>' }, 1200) }
+        })
+    }
+
+    function resetAll() {
+      if (timestamps.length === 0 || confirm('Reset all timestamps?')) {
+        timestamps.length = 0
+        render()
+      }
+    }
+  </script>
+  <script src="https://www.youtube.com/iframe_api"></script>
+</body>
+</html>

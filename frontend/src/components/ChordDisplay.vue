@@ -1,18 +1,19 @@
 <script setup lang="ts">
 import { computed } from 'vue'
-import type { PlayBundle } from '../types/playBundle'
+import type { TranscriptionBundle } from '../types/transcriptionBundle'
 import type { ActiveEvent } from '../composables/usePlaybackEngine'
 
 const props = defineProps<{
-  bundle: PlayBundle
+  bundle: TranscriptionBundle
   activeEvent: ActiveEvent | null
   activeEventIdx: number | null
   activeProgress: number
 }>()
 
-function isActive(lineIdx: number, slotIdx: number): boolean {
+function isActive(sectionIdx: number, lineIdx: number, slotIdx: number): boolean {
   return (
     props.activeEvent !== null &&
+    props.activeEvent.sectionIdx === sectionIdx &&
     props.activeEvent.lineIdx === lineIdx &&
     props.activeEvent.slotIdx === slotIdx
   )
@@ -24,31 +25,59 @@ interface SegmentInfo {
   fillEnd: number
 }
 
+// segmentMap: for each chord occurrence i, compute the fill fraction
+// [fillStart, fillEnd] for every slot in its "territory".
+//
+// A chord occurrence owns all slots from its own position up to (but not
+// including) the next occurrence. Because a song line can start mid-way
+// through a section and slots are not confined to a single line, the walk
+// advances through three nested coordinates: sectionIdx → lineIdx → slotIdx.
+// When slotIdx overflows a line it resets to 0 and lineIdx advances; when
+// lineIdx overflows a section it resets to 0 and sectionIdx advances.
+// The last occurrence's territory extends to the very end of the bundle.
+//
+// Fill fractions are proportional to character length so that a long lyric
+// token consumes more of the progress bar than a short chord token.
 const segmentMap = computed<Map<string, SegmentInfo>>(() => {
   const map = new Map<string, SegmentInfo>()
-  const { events, lines } = props.bundle
+  const { occurrences, sections } = props.bundle
 
-  for (let i = 0; i < events.length; i++) {
-    const startLine = events[i].lineIdx
-    const startSlot = events[i].slotIdx
-    const nextEvent = events[i + 1] ?? null
+  for (let i = 0; i < occurrences.length; i++) {
+    const nextOcc = occurrences[i + 1] ?? null
 
-    // Collect all slots in this chord's territory
-    const segments: Array<{ lineIdx: number; slotIdx: number; charLen: number }> = []
-    let lineIdx = startLine
-    let slotIdx = startSlot
+    let sectionIdx = occurrences[i].sectionIdx
+    let lineIdx = occurrences[i].lineIdx
+    let slotIdx = occurrences[i].slotIdx
 
+    const segments: Array<{ sectionIdx: number; lineIdx: number; slotIdx: number; charLen: number }> = []
+
+    // Walk forward from this occurrence until we reach the next occurrence
+    // or run off the end of the bundle.
     while (true) {
-      if (nextEvent && lineIdx === nextEvent.lineIdx && slotIdx === nextEvent.slotIdx) break
-      if (lineIdx >= lines.length) break
+      if (nextOcc &&
+          sectionIdx === nextOcc.sectionIdx &&
+          lineIdx === nextOcc.lineIdx &&
+          slotIdx === nextOcc.slotIdx) break
+      if (sectionIdx >= sections.length) break
 
-      const slot = lines[lineIdx].slots[slotIdx]
+      const section = sections[sectionIdx]
+      if (lineIdx >= section.lines.length) {
+        console.warn('[chord-along] segmentMap: lineIdx out of bounds — bundle may be malformed', { sectionIdx, lineIdx, occurrenceIdx: i })
+        break
+      }
+
+      const slot = section.lines[lineIdx].slots[slotIdx]
       const charLen = Math.max(slot.chord?.length ?? 0, slot.text?.length ?? 0, 1)
-      segments.push({ lineIdx, slotIdx, charLen })
+      segments.push({ sectionIdx, lineIdx, slotIdx, charLen })
 
       slotIdx++
-      if (slotIdx >= lines[lineIdx].slots.length) {
+      if (slotIdx >= section.lines[lineIdx].slots.length) {
         lineIdx++
+        slotIdx = 0
+      }
+      if (lineIdx >= section.lines.length) {
+        sectionIdx++
+        lineIdx = 0
         slotIdx = 0
       }
     }
@@ -56,7 +85,7 @@ const segmentMap = computed<Map<string, SegmentInfo>>(() => {
     const totalChars = segments.reduce((sum, s) => sum + s.charLen, 0)
     let cumulative = 0
     for (const seg of segments) {
-      map.set(`${seg.lineIdx}:${seg.slotIdx}`, {
+      map.set(`${seg.sectionIdx}:${seg.lineIdx}:${seg.slotIdx}`, {
         eventIdx: i,
         fillStart: cumulative / totalChars,
         fillEnd: (cumulative + seg.charLen) / totalChars,
@@ -68,9 +97,9 @@ const segmentMap = computed<Map<string, SegmentInfo>>(() => {
   return map
 })
 
-function slotProgressWidth(lineIdx: number, slotIdx: number): string {
+function slotProgressWidth(sectionIdx: number, lineIdx: number, slotIdx: number): string {
   if (props.activeEventIdx === null) return '0%'
-  const info = segmentMap.value.get(`${lineIdx}:${slotIdx}`)
+  const info = segmentMap.value.get(`${sectionIdx}:${lineIdx}:${slotIdx}`)
   if (!info || info.eventIdx !== props.activeEventIdx) return '0%'
   const { fillStart, fillEnd } = info
   const local =
@@ -84,26 +113,32 @@ function slotProgressWidth(lineIdx: number, slotIdx: number): string {
 <template>
   <div class="chord-sheet">
     <div
-      v-for="(line, lineIdx) in bundle.lines"
-      :key="lineIdx"
-      class="line"
+      v-for="(section, sectionIdx) in bundle.sections"
+      :key="sectionIdx"
+      class="section"
     >
       <div
-        v-if="line.section"
+        v-if="section.label"
         class="section-label"
       >
-        {{ line.section }}
+        {{ section.label }}
       </div>
-      <div class="slots">
-        <div
-          v-for="(slot, slotIdx) in line.slots"
-          :key="slotIdx"
-          class="slot"
-          :class="{ active: isActive(lineIdx, slotIdx) }"
-        >
-          <span class="chord">{{ slot.chord ?? ' ' }}</span>
-          <div class="progress-bar" :style="{ width: slotProgressWidth(lineIdx, slotIdx) }" />
-          <span class="lyric">{{ slot.text ?? ' ' }}</span>
+      <div
+        v-for="(line, lineIdx) in section.lines"
+        :key="lineIdx"
+        class="line"
+      >
+        <div class="slots">
+          <div
+            v-for="(slot, slotIdx) in line.slots"
+            :key="slotIdx"
+            class="slot"
+            :class="{ active: isActive(sectionIdx, lineIdx, slotIdx) }"
+          >
+            <span class="chord">{{ slot.chord ?? ' ' }}</span>
+            <div class="progress-bar" :style="{ width: slotProgressWidth(sectionIdx, lineIdx, slotIdx) }" />
+            <span class="lyric">{{ slot.text ?? ' ' }}</span>
+          </div>
         </div>
       </div>
     </div>
@@ -116,7 +151,13 @@ function slotProgressWidth(lineIdx: number, slotIdx: number): string {
   padding: 1.5rem;
   display: flex;
   flex-direction: column;
-  gap: 1rem;
+  gap: 1.5rem;
+}
+
+.section {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
 }
 
 .section-label {
@@ -124,7 +165,6 @@ function slotProgressWidth(lineIdx: number, slotIdx: number): string {
   text-transform: uppercase;
   letter-spacing: 0.1em;
   color: #888;
-  margin-bottom: 0.25rem;
 }
 
 .slots {

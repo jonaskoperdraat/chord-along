@@ -13,6 +13,7 @@
     "generate:api": "openapi-generator-cli generate -i ../api/openapi.yaml -g typescript-fetch -o src/generated/api -t openapi-templates --additional-properties=typescriptThreePlus=true,withSeparateModelsAndApi=true,modelPackage=models,apiPackage=apis"
   },
   "dependencies": {
+    "chordsheetjs": "^15.5.1",
     "vue": "^3.5.34"
   },
   "devDependencies": {

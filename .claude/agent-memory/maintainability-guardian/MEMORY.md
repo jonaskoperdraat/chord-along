@@ -1,0 +1,1 @@
+- [Compiler pipeline patterns](compiler-pipeline-patterns.md) — pure-function compile(), two-ref engine design, recurring doc gaps, testability notes

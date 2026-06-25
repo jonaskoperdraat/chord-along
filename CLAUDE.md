@@ -28,7 +28,15 @@ npm install   # first time only
 npm run dev   # → http://localhost:5173
 ```
 
-Opens the chord player with a hand-crafted Photograph (Nickelback) fixture. The YouTube embed loads automatically; hit play and watch chords highlight in sync.
+Opens the chord player with a Photograph (Nickelback) fixture. The YouTube embed loads automatically; hit play and watch chords highlight in sync.
+
+**Fixture generation** (run after editing `frontend/src/fixtures/sample.chordpro`):
+```bash
+cd frontend
+node scripts/gen-fixture.mjs   # rewrites sample.bundle.json + placeholder sample.sync-play.json
+```
+
+To capture real timestamps for the sync file, open `/tap.html` in the running Vite dev server (`http://localhost:5173/tap.html`), play the video, and press `Space` on each chord change. Copy the resulting JSON array into the `timestamps` field of `sample.sync-play.json`.
 
 **Backend:**
 ```bash
@@ -45,6 +53,7 @@ Starts the Quarkus dev server with hot reload. The API is available at `http://l
 npm run dev      # Vite dev server → http://localhost:5173
 npm run build    # Type-check + production build → frontend/dist/
 npm run lint     # ESLint
+npm run test     # Vitest unit tests
 
 # Backend — run from backend/
 ./mvnw quarkus:dev   # Dev server with hot reload → http://localhost:8080

@@ -4,20 +4,26 @@ import { useYouTubePlayer } from '../composables/useYouTubePlayer'
 import { usePlaybackEngine } from '../composables/usePlaybackEngine'
 import ChordDisplay from '../components/ChordDisplay.vue'
 import { assertBundleVersion } from '../utils/bundleVersion'
-import type { PlayBundle } from '../types/playBundle'
-import { SongsApi, Configuration } from '../generated/api'
+import type { TranscriptionBundle, SyncPlayData } from '../types/transcriptionBundle'
 
-const bundle = ref<PlayBundle | null>(null)
+const bundle = ref<TranscriptionBundle | null>(null)
+const syncPlay = ref<SyncPlayData | null>(null)
 
 const { playerState, createPlayer, currentTime } = useYouTubePlayer()
-const { activeEvent, activeEventIdx, activeProgress } = usePlaybackEngine(bundle, currentTime, playerState)
+const { activeEvent, activeEventIdx, activeProgress } = usePlaybackEngine(bundle, syncPlay, currentTime, playerState)
 
 onMounted(async () => {
-  const api = new SongsApi(new Configuration({ basePath: import.meta.env.VITE_API_BASE_URL }))
-  const loaded = await api.getSongBundle({ id: 'photograph' })
-  assertBundleVersion(loaded as PlayBundle)
-  bundle.value = loaded as PlayBundle
-  createPlayer('yt-player', bundle.value.source.videoId)
+  const [bundleData, syncData] = await Promise.all([
+    import('../fixtures/sample.bundle.json'),
+    import('../fixtures/sample.sync-play.json'),
+  ])
+  const loaded = bundleData.default as TranscriptionBundle
+  assertBundleVersion(loaded)
+  bundle.value = loaded
+  syncPlay.value = syncData.default as SyncPlayData
+  if (loaded.source.kind === 'youtube') {
+    createPlayer('yt-player', loaded.source.videoId)
+  }
 })
 </script>
 

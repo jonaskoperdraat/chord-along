@@ -2,17 +2,12 @@ import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
 import { ref, nextTick } from 'vue'
 import { defineComponent, createApp } from 'vue'
 import { usePlaybackEngine } from '../composables/usePlaybackEngine'
-import type { PlayBundle } from '../types/playBundle'
+import type { TranscriptionBundle, SyncPlayData } from '../types/transcriptionBundle'
 
 // ---------------------------------------------------------------------------
 // Test infrastructure
 // ---------------------------------------------------------------------------
 
-/**
- * Runs a composable inside an active component context so that lifecycle hooks
- * (onUnmounted, watch) work correctly.  Returns the composable's return value
- * and an `unmount` function.
- */
 function withSetup<T>(composableFn: () => T): { result: T; unmount: () => void } {
   let result!: T
   const app = createApp(
@@ -29,27 +24,45 @@ function withSetup<T>(composableFn: () => T): { result: T; unmount: () => void }
   return { result, unmount: () => app.unmount() }
 }
 
-function makeBundle(
-  events: { t: number; lineIdx: number; slotIdx: number }[],
-  offsetSec = 0,
-): PlayBundle {
+// 5 occurrences across 2 sections (3 in section 0, 2 in section 1)
+function makeBundle(offsetSec = 0): TranscriptionBundle {
   return {
     source: { kind: 'youtube', videoId: 'test', offsetSec },
     version: 1,
-    lines: [
-      { slots: [{ chord: 'G' }, { chord: 'D' }, { chord: 'Em' }] },
-      { slots: [{ chord: 'C' }, { chord: 'Am' }] },
+    metadata: {},
+    sections: [
+      {
+        lines: [
+          { slots: [
+            { chord: 'G', occurrenceIdx: 0 },
+            { chord: 'D', occurrenceIdx: 1 },
+            { chord: 'Em', occurrenceIdx: 2 },
+          ]},
+        ],
+      },
+      {
+        lines: [
+          { slots: [
+            { chord: 'C', occurrenceIdx: 3 },
+            { chord: 'Am', occurrenceIdx: 4 },
+          ]},
+        ],
+      },
     ],
-    events,
+    occurrences: [
+      { occurrenceIdx: 0, sectionIdx: 0, lineIdx: 0, slotIdx: 0, chord: 'G' },
+      { occurrenceIdx: 1, sectionIdx: 0, lineIdx: 0, slotIdx: 1, chord: 'D' },
+      { occurrenceIdx: 2, sectionIdx: 0, lineIdx: 0, slotIdx: 2, chord: 'Em' },
+      { occurrenceIdx: 3, sectionIdx: 1, lineIdx: 0, slotIdx: 0, chord: 'C' },
+      { occurrenceIdx: 4, sectionIdx: 1, lineIdx: 0, slotIdx: 1, chord: 'Am' },
+    ],
   }
 }
 
-/**
- * Sets up mocks for requestAnimationFrame/cancelAnimationFrame before the
- * composable is created and returns a `runTick` helper that manually fires
- * one rAF frame.  The tick reschedules itself, so `lastCallback` is always
- * updated after each call.
- */
+function makeSyncPlay(timestamps: number[]): SyncPlayData {
+  return { timestamps }
+}
+
 function setupRafMocks() {
   let lastCallback: FrameRequestCallback | null = null
 
@@ -64,7 +77,7 @@ function setupRafMocks() {
   function runTick(domTimestamp = 0) {
     if (lastCallback) {
       const cb = lastCallback
-      lastCallback = null // clear before calling; cb will re-register
+      lastCallback = null
       cb(domTimestamp)
     }
   }
@@ -88,17 +101,15 @@ describe('usePlaybackEngine', () => {
   // ── initial state before first tick ──────────────────────────────────────
 
   it('initializes with activeEvent null, activeEventIdx null, and activeProgress 0 before playback starts', () => {
-    // Given
     setupRafMocks()
-    const bundle = makeBundle([{ t: 5, lineIdx: 0, slotIdx: 0 }])
-    const playerState = ref(0) // not playing
+    const bundle = makeBundle()
+    const syncPlay = makeSyncPlay([5])
+    const playerState = ref(0)
 
-    // When
     const { result, unmount } = withSetup(() =>
-      usePlaybackEngine(bundle, () => 0, playerState),
+      usePlaybackEngine(bundle, syncPlay, () => 0, playerState),
     )
 
-    // Then
     expect(result.activeEvent.value).toBeNull()
     expect(result.activeEventIdx.value).toBeNull()
     expect(result.activeProgress.value).toBe(0)
@@ -106,129 +117,88 @@ describe('usePlaybackEngine', () => {
     unmount()
   })
 
-  // ── time before first event ───────────────────────────────────────────────
+  // ── time before first timestamp ───────────────────────────────────────────
 
-  it('sets activeEvent, activeEventIdx, and activeProgress to null/0 when time is before the first event', async () => {
-    // Given
+  it('sets activeEvent, activeEventIdx, and activeProgress to null/0 when time is before the first timestamp', async () => {
     const { runTick } = setupRafMocks()
-    const bundle = makeBundle([{ t: 5, lineIdx: 0, slotIdx: 0 }])
+    const bundle = makeBundle()
+    const syncPlay = makeSyncPlay([5])
     const playerState = ref(0)
     const { result, unmount } = withSetup(() =>
-      usePlaybackEngine(bundle, () => 0, playerState), // time=0, first event at t=5
+      usePlaybackEngine(bundle, syncPlay, () => 0, playerState),
     )
 
-    // When — start playback then run one tick
-    playerState.value = 1 // YT_PLAYING
-    await nextTick()
-    runTick()
-
-    // Then
-    expect(result.activeEvent.value).toBeNull()
-    expect(result.activeEventIdx.value).toBeNull()
-    expect(result.activeProgress.value).toBe(0)
-
-    unmount()
-  })
-
-  // ── time exactly on first event ───────────────────────────────────────────
-
-  it('activates event 0 with progress 0 when time equals its timestamp exactly', async () => {
-    // Given
-    const { runTick } = setupRafMocks()
-    const bundle = makeBundle([
-      { t: 5, lineIdx: 0, slotIdx: 0 },
-      { t: 10, lineIdx: 0, slotIdx: 1 },
-    ])
-    const playerState = ref(0)
-    const { result, unmount } = withSetup(() =>
-      usePlaybackEngine(bundle, () => 5, playerState), // time = event[0].t exactly
-    )
-
-    // When
     playerState.value = 1
     await nextTick()
     runTick()
 
-    // Then — (5-5)/(10-5) = 0
+    expect(result.activeEvent.value).toBeNull()
+    expect(result.activeEventIdx.value).toBeNull()
+    expect(result.activeProgress.value).toBe(0)
+
+    unmount()
+  })
+
+  // ── time exactly on first timestamp ──────────────────────────────────────
+
+  it('activates occurrence 0 with progress 0 when time equals its timestamp exactly', async () => {
+    const { runTick } = setupRafMocks()
+    const bundle = makeBundle()
+    const syncPlay = makeSyncPlay([5, 10])
+    const playerState = ref(0)
+    const { result, unmount } = withSetup(() =>
+      usePlaybackEngine(bundle, syncPlay, () => 5, playerState),
+    )
+
+    playerState.value = 1
+    await nextTick()
+    runTick()
+
+    // (5-5)/(10-5) = 0
     expect(result.activeEventIdx.value).toBe(0)
-    expect(result.activeEvent.value).toEqual({ lineIdx: 0, slotIdx: 0 })
+    expect(result.activeEvent.value).toEqual({ sectionIdx: 0, lineIdx: 0, slotIdx: 0 })
     expect(result.activeProgress.value).toBe(0)
 
     unmount()
   })
 
-  // ── fractional progress between two events ────────────────────────────────
+  // ── fractional progress between two timestamps ────────────────────────────
 
-  it('computes the correct fractional activeProgress between two consecutive events', async () => {
-    // Given
+  it('computes the correct fractional activeProgress between two consecutive timestamps', async () => {
     const { runTick } = setupRafMocks()
-    const bundle = makeBundle([
-      { t: 5, lineIdx: 0, slotIdx: 0 },
-      { t: 9, lineIdx: 0, slotIdx: 1 },
-    ])
+    const bundle = makeBundle()
+    const syncPlay = makeSyncPlay([5, 9])
     const playerState = ref(0)
     const { result, unmount } = withSetup(() =>
-      usePlaybackEngine(bundle, () => 7, playerState), // time=7, midpoint of [5,9]
+      usePlaybackEngine(bundle, syncPlay, () => 7, playerState),
     )
 
-    // When
     playerState.value = 1
     await nextTick()
     runTick()
 
-    // Then — (7-5)/(9-5) = 2/4 = 0.5
+    // (7-5)/(9-5) = 0.5
     expect(result.activeEventIdx.value).toBe(0)
     expect(result.activeProgress.value).toBeCloseTo(0.5)
 
     unmount()
   })
 
-  // ── last event: progress always 1 ────────────────────────────────────────
+  // ── last timestamp: progress always 1 ────────────────────────────────────
 
-  it('sets activeProgress to 1 for the last event because there is no next event', async () => {
-    // Given
+  it('sets activeProgress to 1 for the last timestamp because there is no next timestamp', async () => {
     const { runTick } = setupRafMocks()
-    const bundle = makeBundle([
-      { t: 2, lineIdx: 0, slotIdx: 0 },
-      { t: 8, lineIdx: 0, slotIdx: 1 },
-    ])
+    const bundle = makeBundle()
+    const syncPlay = makeSyncPlay([2, 8])
     const playerState = ref(0)
     const { result, unmount } = withSetup(() =>
-      usePlaybackEngine(bundle, () => 8.5, playerState), // past the last event
+      usePlaybackEngine(bundle, syncPlay, () => 8.5, playerState),
     )
 
-    // When
     playerState.value = 1
     await nextTick()
     runTick()
 
-    // Then — idx=1 (last event, no next) → progress = 1
-    expect(result.activeEventIdx.value).toBe(1)
-    expect(result.activeProgress.value).toBe(1)
-
-    unmount()
-  })
-
-  // ── progress clamps to 1 at the boundary ─────────────────────────────────
-
-  it('clamps activeProgress to 1 when time equals the next event timestamp (Math.min guard)', async () => {
-    // Given — time equals event[1].t exactly; binary search returns idx=1 (no next) → progress=1
-    const { runTick } = setupRafMocks()
-    const bundle = makeBundle([
-      { t: 5, lineIdx: 0, slotIdx: 0 },
-      { t: 10, lineIdx: 0, slotIdx: 1 },
-    ])
-    const playerState = ref(0)
-    const { result, unmount } = withSetup(() =>
-      usePlaybackEngine(bundle, () => 10, playerState),
-    )
-
-    // When
-    playerState.value = 1
-    await nextTick()
-    runTick()
-
-    // Then — binary search returns idx=1 (last event), no next → 1
     expect(result.activeEventIdx.value).toBe(1)
     expect(result.activeProgress.value).toBe(1)
 
@@ -238,52 +208,40 @@ describe('usePlaybackEngine', () => {
   // ── offsetSec applied before searching ───────────────────────────────────
 
   it('applies bundle.source.offsetSec to getCurrentTime before the binary search', async () => {
-    // Given — offsetSec=3; getCurrentTime returns 2 → effective search time = 5
     const { runTick } = setupRafMocks()
-    const bundle = makeBundle(
-      [
-        { t: 5, lineIdx: 0, slotIdx: 0 },
-        { t: 10, lineIdx: 0, slotIdx: 1 },
-      ],
-      3, // offsetSec
-    )
+    const bundle = makeBundle(3) // offsetSec=3
+    const syncPlay = makeSyncPlay([5, 10])
     const playerState = ref(0)
     const { result, unmount } = withSetup(() =>
-      usePlaybackEngine(bundle, () => 2, playerState), // 2+3=5 → hits event[0]
+      usePlaybackEngine(bundle, syncPlay, () => 2, playerState), // 2+3=5 → hits idx 0
     )
 
-    // When
     playerState.value = 1
     await nextTick()
     runTick()
 
-    // Then — without offset t=2 < 5 → idx=-1; with offset t=5 → idx=0
     expect(result.activeEventIdx.value).toBe(0)
 
     unmount()
   })
 
-  // ── activeEvent carries correct lineIdx/slotIdx ───────────────────────────
+  // ── activeEvent carries correct sectionIdx/lineIdx/slotIdx ───────────────
 
-  it('sets activeEvent to the lineIdx and slotIdx of the resolved event', async () => {
-    // Given
+  it('sets activeEvent to the sectionIdx/lineIdx/slotIdx resolved from occurrences[]', async () => {
     const { runTick } = setupRafMocks()
-    const bundle = makeBundle([
-      { t: 1, lineIdx: 0, slotIdx: 0 },
-      { t: 4, lineIdx: 1, slotIdx: 1 },
-    ])
+    const bundle = makeBundle()
+    const syncPlay = makeSyncPlay([1, 4])
     const playerState = ref(0)
     const { result, unmount } = withSetup(() =>
-      usePlaybackEngine(bundle, () => 6, playerState), // t=6 lands on event[1]
+      usePlaybackEngine(bundle, syncPlay, () => 6, playerState), // lands on idx 1
     )
 
-    // When
     playerState.value = 1
     await nextTick()
     runTick()
 
-    // Then
-    expect(result.activeEvent.value).toEqual({ lineIdx: 1, slotIdx: 1 })
+    // occurrences[1] = { sectionIdx: 0, lineIdx: 0, slotIdx: 1, chord: 'D' }
+    expect(result.activeEvent.value).toEqual({ sectionIdx: 0, lineIdx: 0, slotIdx: 1 })
 
     unmount()
   })
@@ -291,28 +249,26 @@ describe('usePlaybackEngine', () => {
   // ── stop prevents further rAF registration ────────────────────────────────
 
   it('stops scheduling rAF frames when playerState leaves PLAYING', async () => {
-    // Given
     const { runTick, rafSpy } = setupRafMocks()
-    const bundle = makeBundle([{ t: 0, lineIdx: 0, slotIdx: 0 }])
+    const bundle = makeBundle()
+    const syncPlay = makeSyncPlay([0])
     const playerState = ref(0)
     const { result, unmount } = withSetup(() =>
-      usePlaybackEngine(bundle, () => 1, playerState),
+      usePlaybackEngine(bundle, syncPlay, () => 1, playerState),
     )
 
-    playerState.value = 1 // start
+    playerState.value = 1
     await nextTick()
-    runTick() // one tick fires, re-registers rAF
+    runTick()
 
-    expect(result.activeEventIdx.value).toBe(0) // sanity check: refs were set
+    expect(result.activeEventIdx.value).toBe(0)
 
-    // When — pause
     playerState.value = 2
     await nextTick()
 
     const callCountAfterStop = rafSpy.mock.calls.length
-    runTick() // the previously-captured callback was cancelled, so this is a no-op
+    runTick()
 
-    // Then — no new rAF registration after stop
     expect(rafSpy.mock.calls.length).toBe(callCountAfterStop)
 
     unmount()
