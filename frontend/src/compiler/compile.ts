@@ -71,10 +71,18 @@ function prepareSource(source: string): { normalized: string; annotations: strin
 
 const ANNOT_RE = /^__ANNOT(\d+)__$/
 
-export function compile(
+async function hashSource(source: string): Promise<string> {
+  const bytes = new TextEncoder().encode(source)
+  const buffer = await crypto.subtle.digest('SHA-256', bytes)
+  return Array.from(new Uint8Array(buffer))
+    .map((b) => b.toString(16).padStart(2, '0'))
+    .join('')
+}
+
+export async function compile(
   source: string,
   sourceDescriptor: SourceDescriptor = { kind: 'youtube', videoId: '', offsetSec: 0 },
-): TranscriptionBundle {
+): Promise<TranscriptionBundle> {
   if (sourceDescriptor.kind === 'youtube' && !sourceDescriptor.videoId) {
     console.warn('[chord-along] compile(): youtube sourceDescriptor has an empty videoId — the player will not load a video')
   }
@@ -186,6 +194,7 @@ export function compile(
   return {
     source: sourceDescriptor,
     version: BUNDLE_VERSION,
+    sourceHash: await hashSource(source),
     metadata: {
       title: song.title ?? undefined,
       artist: firstString(song.artist),

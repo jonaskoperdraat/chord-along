@@ -67,6 +67,8 @@ export interface BundleMetadata {
 export interface TranscriptionBundle {
   source: SourceDescriptor
   version: number
+  /** SHA-256 of the UTF-8 ChordPro source text, hex-encoded lower-case. Used to detect stale syncs. */
+  sourceHash: string
   metadata: BundleMetadata
   /** Root section — always present, never has a label or type. All song content lives here. */
   body: Section

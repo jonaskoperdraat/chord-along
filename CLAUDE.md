@@ -92,3 +92,10 @@ openspec instructions apply --change "<name>" --json   # context files + task pr
 - `openspec/config.yaml` — schema selection and shared project context / per-artifact rules. **Fill in the `context:` block as soon as tech stack and domain decisions are made** — it is injected into every AI prompt when generating artifacts, so an empty context produces generic output.
 - `openspec/changes/` — active changes; `openspec/changes/archive/` holds completed ones.
 - `openspec/specs/` — main specifications (synced from change deltas).
+
+## Diagram tooling
+
+Specs in `openspec/specs/` embed **PlantUML** diagrams in fenced ` ```plantuml ` code blocks. GitHub does not render these natively; use one of:
+
+- **VS Code**: install the [`jebbs.plantuml`](https://marketplace.visualstudio.com/items?itemName=jebbs.plantuml) extension (recommended via `.vscode/extensions.json`). Open the preview with `Alt+D`. Requires a local PlantUML server (`java -jar plantuml.jar -picoweb`) or the default plantuml.com online renderer.
+- **Online**: paste diagram source at [plantuml.com/plantuml](https://www.plantuml.com/plantuml/uml/).

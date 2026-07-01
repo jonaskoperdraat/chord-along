@@ -15,6 +15,7 @@
 // sample.sync-play.json to produce a real sync. See CLAUDE.md for the full
 // fixture-generation workflow.
 
+import { createHash } from 'crypto'
 import { readFileSync, writeFileSync } from 'fs'
 import { fileURLToPath } from 'url'
 import { dirname, join } from 'path'
@@ -166,9 +167,12 @@ for (const paragraph of song.bodyParagraphs) {
   }
 }
 
+const sourceHash = createHash('sha256').update(rawSource, 'utf8').digest('hex')
+
 const bundle = {
   source: { kind: 'youtube', videoId: 'BB0DU4DoPP4', offsetSec: 0 },
   version: BUNDLE_VERSION,
+  sourceHash,
   metadata: {
     title: song.title ?? undefined,
     artist: firstString(song.artist),
