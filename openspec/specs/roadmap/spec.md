@@ -27,7 +27,9 @@ Deliverables:
 - Clerk integration (Google + Spotify providers)
 - User and UserIdentity entity provisioning on first login
 - Transcription CRUD API endpoints (Quarkus)
-- Plain-textarea ChordPro editor in the frontend (compiled by `compile.ts` on save; source + bundle sent to BE)
+- CodeMirror 6 ChordPro editor in the frontend, used as a plain text surface
+  (no syntax highlighting, no autocompletion in this phase); compiled by
+  `compile.ts` on save, source + bundle sent to BE
 - Browse transcriptions page (public, no login required)
 - View transcription page (rendered chord sheet, public)
 - Account deletion flow (sentinel user pattern)
@@ -45,10 +47,11 @@ visitor can browse and view it rendered.
 - **WHEN** a Guest attempts to create a transcription
 - **THEN** the system SHALL redirect to the Clerk login flow
 
-#### Scenario: Phase 1 editor is a plain textarea
+#### Scenario: Phase 1 editor is CodeMirror without highlighting
 
 - **WHEN** a logged-in user opens the transcription editor
-- **THEN** the system SHALL present a plain textarea for ChordPro input; no syntax highlighting is required in this phase
+- **THEN** the system SHALL present a CodeMirror 6 editor for ChordPro input,
+  with no syntax highlighting or autocompletion required in this phase
 
 ### Requirement: Phase 2 — Sync authoring
 
@@ -123,7 +126,7 @@ Items:
 - Java authoritative compiler: port `compile.ts` to Quarkus so the backend compiles bundles independently of the frontend. Replaces the Phase 1 "FE compiles on save" workaround.
 - Rebase algorithm: when a transcription is edited, map stale `AnchorSidecar` anchor tuples to positions in the new `TranscriptionBundle` to recover sync data without re-tapping.
 - Spotify Web Playback SDK: use the Spotify access token (with playback scopes) to control audio playback directly from the browser for Spotify-sourced syncs.
-- Syntax-aware ChordPro editor: replace the plain textarea with a CodeMirror 6 editor featuring syntax highlighting, autocompletion, and synced scroll to a rendered preview.
+- Syntax-aware ChordPro editor: extend the CodeMirror 6 editor already in place since Phase 1 with syntax highlighting, autocompletion, and synced scroll to a rendered preview.
 - Content moderation: flags, takedowns, and quality signals for community syncs.
 - Additional audio sources: Spotify track ID as audio source (distinct from Spotify login).
 
